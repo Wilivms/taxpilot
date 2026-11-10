@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>document.documentElement.classList.add("js");</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TaxPilot — crypto taxes, any country</title>
+<meta name="description" content="Paste your BNB Chain wallets, pick your countries: TaxPilot fills your crypto tax forms and finds the legal ways to pay less.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0e11;--surface:#12161c;--card:#181a20;--line:#2b3139;--ink:#eaecef;--ink2:#b7bdc6;--muted:#848e9c;--y:#f0b90b;--yk:#0b0e11;--good:#0ecb81;--bad:#f6465d;--mono:"IBM Plex Mono",ui-monospace,monospace;--ease:cubic-bezier(.22,.61,.36,1)}
+*{box-sizing:border-box}html{background:var(--bg);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 var(--mono);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-underline-offset:3px}.wrap{max-width:1180px;margin:0 auto;padding:0 28px}.num{font-variant-numeric:tabular-nums}
+/* grid paper background like nearhackathon */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:56px 56px;opacity:.18;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%)}
+.bar{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(8px)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700;letter-spacing:.06em;text-decoration:none}
+.brand i{width:10px;height:10px;background:var(--y);display:inline-block;animation:blink 1.6s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+nav{display:flex;gap:2px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+nav a{text-decoration:none;color:var(--muted);padding:6px 10px}nav a:hover{color:var(--y)}
+@media(max-width:780px){nav{display:none}}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 20px;background:var(--y);color:var(--yk);font:700 13px var(--mono);text-transform:uppercase;letter-spacing:.06em;transition:transform .12s,filter .15s}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:scale(.97)}.btn.sm{height:34px;padding:0 14px;font-size:12px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+/* hero */
+.hero{padding:96px 0 40px;position:relative}
+.tag{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.tag b{color:var(--y);font-weight:600}
+.hero h1{font:700 clamp(46px,9vw,120px)/.9 var(--mono);letter-spacing:-.06em;margin:22px 0 0;text-transform:uppercase}
+.hero h1 .l{display:block;overflow:hidden}.hero h1 .l>span{display:block}
+.js .hero h1 .l>span{transform:translateY(105%);transition:transform .9s var(--ease)}
+.js .hero h1 .l:nth-child(2)>span{transition-delay:.08s}.js .hero.in h1 .l>span{transform:none}
+.hero h1 em{font-style:normal;color:var(--y)}
+.hero-foot{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:end;margin-top:44px}
+@media(max-width:820px){.hero-foot{grid-template-columns:1fr}}
+.hero p{margin:0;color:var(--ink2);font-size:15px;max-width:52ch}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);background:var(--surface)}
+.stats div{padding:14px 16px;border-left:1px solid var(--line)}.stats div:first-child{border-left:0}
+.stats b{display:block;font-size:26px;color:var(--y);letter-spacing:-.03em}.stats span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+/* pixels */
+.pixels{display:grid;grid-template-columns:repeat(36,1fr);gap:4px;margin:56px 0 0;opacity:.9}
+.pixels i{aspect-ratio:1;background:var(--line);animation:pw 3.2s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes pw{0%,15%,80%,to{opacity:.6;transform:none}40%{opacity:.25;transform:translateY(-3px) scale(.6)}55%{opacity:1;background:var(--y);transform:translateY(1px)}}
+/* ticker */
+.ticker{border-block:1px solid var(--line);overflow:hidden;background:var(--surface);margin-top:56px}
+.tt{display:flex;width:max-content;animation:tape 60s linear infinite}.ticker span{padding:12px 22px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}.ticker span.s{color:var(--y);padding:12px 0}
+@keyframes tape{to{transform:translateX(-50%)}}
+/* sections */
+section{padding:88px 0;position:relative}
+.sh{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:end;margin-bottom:36px}
+@media(max-width:820px){.sh{grid-template-columns:1fr}}
+.sh h2{font:700 clamp(32px,5vw,64px)/.95 var(--mono);letter-spacing:-.05em;margin:12px 0 0;text-transform:uppercase}
+.sh h2 em{font-style:normal;color:var(--y)}.sh p{margin:0;color:var(--ink2);max-width:46ch;justify-self:end}
+/* cells grid (track-card style) */
+.cells{display:grid;border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card);padding:24px;position:relative;overflow:hidden;transition:color .2s}
+.cell::before{content:"";position:absolute;inset:0;background:var(--y);transform:scaleY(0);transform-origin:50% 100%;transition:transform .35s var(--ease);z-index:0}
+.cell>*{position:relative;z-index:1}
+.cell.hov:hover::before{transform:scaleY(1)}.cell.hov:hover{color:var(--yk)}.cell.hov:hover .k,.cell.hov:hover p{color:var(--yk)}
+.k{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.cell h3{font:700 22px/1.15 var(--mono);letter-spacing:-.03em;margin:28px 0 8px;text-transform:uppercase}.cell p{margin:0;color:var(--ink2);font-size:13px}
+/* form */
+.form{display:grid;grid-template-columns:1.1fr 1fr;border:1px solid var(--line);background:var(--card)}
+@media(max-width:900px){.form{grid-template-columns:1fr}}
+.form>div{padding:28px}.form>div+div{border-left:1px solid var(--line)}
+label.l{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px}
+textarea{width:100%;min-height:96px;background:var(--bg);border:1px solid var(--line);color:var(--ink);font:13px var(--mono);padding:12px;resize:vertical}
+textarea:focus{outline:1px solid var(--y)}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.chip{all:unset;cursor:pointer;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 10px;font-size:12px;display:flex;justify-content:space-between;gap:6px;transition:background .15s}
+.chip small{color:var(--muted)}.chip:hover{background:var(--surface)}
+.chip[aria-pressed=true]{background:var(--y);color:var(--yk)}.chip[aria-pressed=true] small{color:var(--yk)}
+@media(max-width:560px){.chips{grid-template-columns:repeat(2,1fr)}}
+.toggle{display:flex;gap:10px;align-items:flex-start;margin:18px 0 0;font-size:13px;cursor:pointer}
+.toggle input{accent-color:var(--y);width:16px;height:16px;margin-top:3px}.toggle small{display:block;color:var(--muted)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:22px}.muted{color:var(--muted);font-size:12px}
+.preset{all:unset;cursor:pointer;font-size:12px;color:var(--y);border-bottom:1px dashed var(--y)}
+/* results */
+.rank{display:grid;grid-template-columns:repeat(5,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line)}
+@media(max-width:900px){.rank{grid-template-columns:repeat(2,1fr)}}
+.rank .cell{padding:20px;cursor:pointer}.rank .cell.best{background:var(--y);color:var(--yk)}.rank .cell.best .k,.rank .cell.best p{color:var(--yk)}
+.rank .amt{font:700 clamp(22px,2.6vw,32px)/1 var(--mono);letter-spacing:-.04em;margin:22px 0 6px}
+.note{font-size:12.5px;color:var(--ink2);border-left:2px solid var(--y);padding-left:12px;margin:14px 0 0}
+.big{font:700 clamp(52px,9vw,104px)/.9 var(--mono);letter-spacing:-.06em;color:var(--y);margin:16px 0 8px}
+.tips{display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line);margin-top:26px}
+@media(max-width:900px){.tips{grid-template-columns:1fr}}
+.tips .cell b{display:block;margin:18px 0 6px}.save{color:var(--good);font-weight:600}
+details{margin-top:24px;border-top:1px solid var(--line);padding-top:14px}summary{cursor:pointer;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:500}.r{text-align:right}
+ul.plain{margin:10px 0 0;padding-left:18px;color:var(--ink2);font-size:12.5px}
+pre{background:var(--bg);border:1px solid var(--line);padding:12px;font-size:12px;white-space:pre-wrap;word-break:break-all;margin:10px 0 0}
+.badge{font-size:11px;padding:2px 8px;border:1px solid currentColor;text-transform:uppercase;letter-spacing:.05em;margin-left:8px;vertical-align:middle}
+.proof{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line)}
+@media(max-width:900px){.proof{grid-template-columns:repeat(2,1fr)}}
+.proof .cell b{display:block;font-size:24px;color:var(--y);margin:22px 0 4px;word-break:break-all}
+footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);font-size:12px}
+#out{display:none;margin-top:40px}
+/* reveal (nearhackathon timing) */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .75s var(--ease),transform .75s var(--ease);transition-delay:var(--rd,0s)}.reveal.revealed{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.reveal{opacity:1;transform:none;transition:none}.js .hero h1 .l>span{transform:none}}
+
+.load{display:none;margin-top:40px;border:1px solid var(--line);background:var(--card);padding:28px}
+.load b{color:var(--y)}.load .bar2{height:4px;background:var(--line);margin-top:16px;overflow:hidden}.load .bar2 i{display:block;height:100%;width:30%;background:var(--y);animation:slide 1.4s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}to{transform:translateX(340%)}}
+.err{border-left:3px solid var(--bad);padding:14px 18px;background:var(--card);margin-top:30px;display:none}
+.tabs{display:flex;border:1px solid var(--line);border-bottom:0;margin-top:40px;flex-wrap:wrap}
+.tab{all:unset;cursor:pointer;padding:14px 20px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;border-right:1px solid var(--line);color:var(--muted)}
+.tab[aria-selected=true]{background:var(--y);color:var(--yk)}
+.panel{border:1px solid var(--line);background:var(--card);padding:26px}
+.formbox{margin-bottom:34px}.formbox h4{font:700 16px var(--mono);margin:0 0 6px;text-transform:uppercase;letter-spacing:-.01em}
+.formbox a{color:var(--y);font-size:12px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));border-left:1px solid var(--line);border-top:1px solid var(--line);margin-top:14px}
+.fields div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 14px}
+.fields .code{font-size:11px;color:var(--y);letter-spacing:.06em}.fields .v{font:700 18px var(--mono);margin-top:4px;word-break:break-word}
+.scroll{overflow-x:auto;margin-top:14px}
+.strat{display:grid;grid-template-columns:1fr;gap:0;border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.strat .cell b.t{display:block;font:700 18px var(--mono);margin:14px 0 6px}
+.strat ol{margin:10px 0 0;padding-left:20px;color:var(--ink2);font-size:13px}
+.strat .cav{color:var(--bad);font-size:12px;margin-top:8px}.strat .src{color:var(--muted);font-size:11px;margin-top:8px}
+.inp{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);font:13px var(--mono);padding:10px}
+</style>
+</head>
+<body>
+<header class="bar"><div class="wrap">
+  <a class="brand" href="#top"><i></i>TAXPILOT</a>
+  <nav><a href="#try">01 Report</a><a href="#how">02 How</a><a href="#proof">03 Onchain</a></nav>
+  <a class="btn sm" href="#try">Get my report</a>
+</div></header>
+
+<div class="hero wrap" id="top">
+  <span class="tag">[ <b>BNB CHAIN</b> / AGENT 2779 / 24 COUNTRIES ]</span>
+  <h1><span class="l"><span>Your crypto taxes,</span></span><span class="l"><span><em>filled in.</em></span></span></h1>
+  <div class="hero-foot">
+    <p>Paste your wallets, pick the countries you could live in. TaxPilot reads the chain, applies each country's 2026 law, fills the official forms line by line and computes the legal strategies that cut your bill.</p>
+    <div class="stats"><div><b class="num">4</b><span>official forms</span></div><div><b class="num">24</b><span>verified countries</span></div><div><b class="num">0</b><span>numbers made by AI</span></div></div>
+  </div>
+  <div class="pixels" id="px" aria-hidden="true"></div>
+</div>
+<div class="ticker" aria-hidden="true"><div class="tt" id="tt"></div></div>
+
+<section id="try"><div class="wrap">
+  <div class="sh"><div><span class="tag">01 / YOUR REPORT</span><h2>Wallets in,<br><em>forms out</em></h2></div><p>Reads the last 365 days of your BSC wallets (BNB, USDT, USDC, FDUSD, CAKE, ETH, BTCB, WBNB). Nothing is stored.</p></div>
+  <form class="form" id="f">
+    <div>
+      <label class="l" for="ws">1 · BSC wallets (up to 3)</label>
+      <textarea id="ws" placeholder="0x…" required></textarea>
+      <label class="l" for="pf" style="margin-top:18px">Exchange accounts abroad (optional, for France's 3916-bis)</label>
+      <input class="inp" id="pf" placeholder="Binance, Coinbase…">
+      <details style="margin-top:16px;border:0;padding:0"><summary>Coins bought more than a year ago? Declare their cost</summary>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px"><input class="inp" id="obp" inputmode="decimal" placeholder="Avg. price paid, € per coin"><input class="inp" id="obd" type="date" value="2021-01-01"></div>
+        <p class="muted" style="margin:8px 0 0">Used only for coins that left your wallet with no purchase visible in the last 365 days. Outgoing transfers count as disposals.</p></details>
+      <label class="toggle"><input type="checkbox" id="nomad"><span>I'm a nomad / I hold several passports<small>Compare every country you could be tax resident in.</small></span></label>
+      <div class="row"><button class="btn" type="submit" id="go">Fill my tax forms</button><span class="muted">Tax year 2026</span></div>
+    </div>
+    <div><label class="l">2 · Tax residence</label><div class="chips" id="chips"></div></div>
+  </form>
+  <div class="load" id="load"><span class="tag">[ WORKING ]</span><p id="lmsg" style="margin:10px 0 0">Reading your wallets on BNB Chain…</p><div class="bar2"><i></i></div></div>
+  <div class="err" id="err"></div>
+  <div id="out" style="display:none"></div>
+</div></section>
+
+<section id="how" style="border-top:1px solid var(--line)"><div class="wrap">
+  <div class="sh"><div><span class="tag">02 / HOW IT WORKS</span><h2>Law as<br><em>code</em></h2></div><p>Built with BNB Agent Studio. The same engine is sold onchain by agent #2779 over ERC-8183.</p></div>
+  <div class="cells" style="grid-template-columns:repeat(4,1fr)">
+    <div class="cell hov"><span class="k">[ 01 / READ ]</span><h3>Your wallets</h3><p>Real BSC transfers, official token contracts only, priced in euros on the day of each move.</p></div>
+    <div class="cell hov"><span class="k">[ 02 / APPLY ]</span><h3>The law</h3><p>One versioned rule set per country: rates, holding periods, allowances, crypto-to-crypto rules.</p></div>
+    <div class="cell hov"><span class="k">[ 03 / FILL ]</span><h3>The forms</h3><p>France 2086 + 2042-C + 3916-bis, Germany Anlage SO, UK SA108, US Form 8949, line by line.</p></div>
+    <div class="cell hov"><span class="k">[ 04 / OPTIMISE ]</span><h3>The bill</h3><p>Legal strategies computed on your numbers: timing, options, donations, losses, residence.</p></div>
+  </div>
+</div></section>
+
+<section id="proof" style="border-top:1px solid var(--line)"><div class="wrap">
+  <div class="sh"><div><span class="tag">03 / ONCHAIN</span><h2>Live on<br><em>BNB testnet</em></h2></div><p>Agents and apps can buy a report from TaxPilot onchain: a funded ERC-8183 job, paid in stablecoins, delivered onchain.</p></div>
+  <div class="proof">
+    <div class="cell hov"><span class="k">ERC-8004 agent</span><b>#2779</b><p><a href="https://bnbagent-api.bnbchain.world/v1/rt/01M73CN6NSE79YPNZEW68SD3PB/.well-known/agent-card.json">Agent card →</a></p></div>
+    <div class="cell hov"><span class="k">Agent wallet</span><b>0x1EC4…cf34</b><p><a href="https://testnet.bscscan.com/address/0x1EC4aC0CE85421eB8B8FAc6c351Eb96D56e1cf34">BscScan →</a></p></div>
+    <div class="cell hov"><span class="k">Paid job #1726</span><b>0.10 U</b><p><a href="https://testnet.bscscan.com/tx/0xa4f518c286473041c2fbd5183f25e540b5de2ce1179f8e6dc66d641cff711dc8">Funding tx →</a></p></div>
+    <div class="cell hov"><span class="k">Price</span><b>$0.10</b><p>per report, ERC-8183</p></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">Automatic estimate from onchain data, not tax advice: check with a professional before filing. Rules for 24 countries verified on 10–11 Nov 2026 against the sources cited in each report. Built at BNB Builder Sessions Paris by Wiliams Lopes.</div></footer>
+
+<script>
+const NAMES={ FR: "France", DE: "Germany", GB: "United Kingdom", AE: "United Arab Emirates", SG: "Singapore", HK: "Hong Kong", MY: "Malaysia", CH: "Switzerland", GE: "Georgia", PT: "Portugal", IT: "Italy", BE: "Belgium", AT: "Austria", IE: "Ireland", ES: "Spain", NL: "Netherlands", CY: "Cyprus", PL: "Poland", US: "United States", CA: "Canada", AU: "Australia", JP: "Japan", IN: "India", KR: "South Korea" },$=(i)=>document.getElementById(i);
+const esc=(s)=>String(s).replace(/[&<>"]/g,(m)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const money=(n,c)=>typeof n==="number"?(n<0?"−":"")+(c==="GBP"?"£":"€")+Math.abs(n).toLocaleString("en-US",{maximumFractionDigits:2}):esc(n);
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+$("px").innerHTML=Array.from({length:72},(_,i)=>`<i style="--d:${((i*37)%29)/10}s"></i>`).join("");
+const tk=["France 2086 filled line by line","Germany Anlage SO","UK SA108 boxes 13.1–13.5","US Form 8949 boxes I / L","24 countries verified","Residence, not passport, decides"].map(t=>`<span>${t}</span><span class="s">■</span>`).join("");$("tt").innerHTML=tk+tk;
+$("chips").innerHTML=Object.entries(NAMES).map(([c,n],i)=>`<button type="button" class="chip" data-c="${c}" aria-pressed="${i===0}">${esc(n)}<small>${c}</small></button>`).join("");
+const chips=[...document.querySelectorAll(".chip")];
+chips.forEach(b=>b.addEventListener("click",()=>{if($("nomad").checked)b.setAttribute("aria-pressed",String(b.getAttribute("aria-pressed")!=="true"));else chips.forEach(x=>x.setAttribute("aria-pressed",String(x===b)));if(!chips.some(x=>x.getAttribute("aria-pressed")==="true"))b.setAttribute("aria-pressed","true");}));
+$("nomad").addEventListener("change",e=>{if(e.target.checked)chips.forEach((x,i)=>x.setAttribute("aria-pressed",String(i<3||x.getAttribute("aria-pressed")==="true")));else{const f=chips.find(x=>x.getAttribute("aria-pressed")==="true")||chips[0];chips.forEach(x=>x.setAttribute("aria-pressed",String(x===f)));}});
+const sel=()=>chips.filter(x=>x.getAttribute("aria-pressed")==="true").map(x=>x.dataset.c);
+
+function formHtml(f,cur){
+  let h=`<div class="formbox"><h4>${esc(f.title)}</h4>${f.url?`<a href="${esc(f.url)}" target="_blank" rel="noopener">Official form →</a>`:""}`;
+  if(f.fields&&f.fields.length)h+=`<div class="fields">${f.fields.map(x=>`<div><div class="code">${esc(x.code)}</div><div class="muted">${esc(x.label)}</div><div class="v num">${typeof x.value==="number"?money(x.value,cur):esc(x.value)}</div></div>`).join("")}</div>`;
+  if(f.table&&f.table.rows.length)h+=`<div class="scroll"><table><tr>${f.table.columns.map(c=>`<th>${esc(c)}</th>`).join("")}</tr>${f.table.rows.slice(0,200).map(r=>`<tr>${r.map((v,i)=>`<td class="${i&&typeof v==="number"?"r num":""}">${esc(v)}</td>`).join("")}</tr>`).join("")}</table></div>`;
+  else if(f.table)h+=`<p class="muted">No line to enter for this year.</p>`;
+  if(f.notes)h+=`<ul class="plain">${f.notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`;
+  return h+"</div>";
+}
+function render(d){
+  const r=d.report,cur=r.currency,t=r.totals;
+  let h=`<span class="tag">[ ${esc(r.countryName)} / ${esc(r.taxYear)} / ${r.verified?"VERIFIED RULES":"UNVERIFIED"} ]</span><div class="big num">${money(t.taxDue,cur)}</div><p class="muted">tax due · net gain ${money(t.netGain,cur)} · exempt ${money(t.exempt,cur)} · ${r.lines.length} disposal line(s)</p>`;
+  if(d.warnings&&d.warnings.length)h+=d.warnings.map(w=>`<p class="note">${esc(w)}</p>`).join("");
+  if(d.comparison){const best=d.comparison.ranking.find(x=>x.verified);h+=`<h3 style="font:700 22px var(--mono);margin:36px 0 14px;text-transform:uppercase">Cheapest legal residence: <span style="color:var(--y)">${esc(best?best.countryName:"—")}</span></h3><div class="rank">${d.comparison.ranking.map((x,i)=>`<div class="cell ${x===best?"best":""}"><span class="k">[ ${String(i+1).padStart(2,"0")} / ${x.country} ]</span><div class="amt num">${money(x.taxDue,x.currency)}</div><p>${esc(x.countryName)}</p></div>`).join("")}</div>${d.comparison.notes.slice(0,2).map(n=>`<p class="note">${esc(n)}</p>`).join("")}`;}
+  h+=`<div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="true" data-p="pf">Tax forms</button><button class="tab" role="tab" aria-selected="false" data-p="ps">Strategies (${d.strategies.length})</button><button class="tab" role="tab" aria-selected="false" data-p="pl">Ledger CSV</button></div>`;
+  h+=`<div class="panel" id="pf">${d.forms.deadline?`<p class="muted">Deadline: ${esc(d.forms.deadline)}</p>`:""}${d.forms.forms.map(f=>formHtml(f,cur)).join("")}</div>`;
+  h+=`<div class="panel" id="ps" hidden><div class="strat">${d.strategies.length?d.strategies.map((s,i)=>`<div class="cell"><span class="k">[ STRATEGY ${i+1} ]</span><b class="t">${esc(s.title)}</b><p>${esc(s.why)}</p><ol>${s.steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol><p class="save">${s.saving?"≈ "+money(s.saving,cur)+" saved":""}</p>${s.caveat?`<p class="cav">⚠ ${esc(s.caveat)}</p>`:""}<p class="src">Source: ${esc(s.source)}</p></div>`).join(""):'<div class="cell"><p>No strategy applies to this portfolio this year.</p></div>'}</div></div>`;
+  h+=`<div class="panel" id="pl" hidden><p class="muted">Every disposal, ready to attach to your return or import in a spreadsheet.</p><div class="row"><button class="btn sm" type="button" id="dl">Download CSV</button></div><pre>${esc(d.forms.csv.split("\n").slice(0,30).join("\n"))}</pre></div>`;
+  h+=`<p class="muted" style="margin-top:18px">${esc(r.disclaimer)}</p>`;
+  $("out").innerHTML=h;$("out").style.display="block";
+  $("out").querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{$("out").querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",String(x===b)));["pf","ps","pl"].forEach(p=>$(p).hidden=p!==b.dataset.p);}));
+  $("dl").addEventListener("click",()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([d.forms.csv],{type:"text/csv"}));a.download=`taxpilot-${r.country}-${r.taxYear.slice(0,4)}.csv`;a.click();});
+  $("out").scrollIntoView({behavior:reduce?"auto":"smooth"});
+}
+$("f").addEventListener("submit",async e=>{
+  e.preventDefault();$("err").style.display="none";$("out").style.display="none";
+  const wallets=$("ws").value.match(/0x[a-fA-F0-9]{40}/g)||[];
+  if(!wallets.length){$("err").textContent="Paste at least one BSC wallet address (0x…).";$("err").style.display="block";return;}
+  const countries=sel(),platforms=$("pf").value.split(",").map(s=>s.trim()).filter(Boolean);const obp=parseFloat(($("obp").value||"").replace(",","."));const olderBasis=isFinite(obp)&&obp>=0&&$("obd").value?{costPerUnitEur:obp,acquiredOn:$("obd").value}:undefined;
+  $("load").style.display="block";$("go").disabled=true;
+  const msgs=["Reading your wallets on BNB Chain…","Pricing every transfer in euros…","Applying each country's 2026 rules…","Filling the official forms…","Computing legal strategies…"];let k=0;const iv=setInterval(()=>{k=Math.min(k+1,msgs.length-1);$("lmsg").textContent=msgs[k];},4500);
+  try{const res=await fetch("/api/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({wallets,countries,year:2026,platforms,olderBasis})});const d=await res.json();if(!res.ok)throw new Error(d.error||res.statusText);render(d);}
+  catch(x){$("err").textContent="Could not build the report: "+x.message;$("err").style.display="block";}
+  finally{clearInterval(iv);$("load").style.display="none";$("go").disabled=false;}
+});
+requestAnimationFrame(()=>document.querySelector(".hero").classList.add("in"));
+const io="IntersectionObserver"in window?new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){e.target.classList.add("revealed");io.unobserve(e.target);}},{threshold:.12,rootMargin:"0px 0px -40px 0px"}):null;
+document.querySelectorAll("section .sh, section .cell, section .form").forEach(n=>{if(!io||reduce||n.getBoundingClientRect().top<innerHeight)return;n.style.setProperty("--rd",`${(Array.from(n.parentElement.children).indexOf(n)%4)*90}ms`);n.classList.add("reveal");io.observe(n);});
+</script>
+</body></html>

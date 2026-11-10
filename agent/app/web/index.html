@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>document.documentElement.classList.add("js");</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TaxPilot — crypto taxes, any country</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0e11;--surface:#12161c;--card:#181a20;--line:#2b3139;--ink:#eaecef;--ink2:#b7bdc6;--muted:#848e9c;--y:#f0b90b;--yk:#0b0e11;--good:#0ecb81;--bad:#f6465d;--mono:"IBM Plex Mono",ui-monospace,monospace;--ease:cubic-bezier(.22,.61,.36,1)}
+*{box-sizing:border-box}html{background:var(--bg);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 var(--mono);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-underline-offset:3px}.wrap{max-width:1180px;margin:0 auto;padding:0 28px}.num{font-variant-numeric:tabular-nums}
+/* grid paper background like nearhackathon */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:56px 56px;opacity:.18;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%)}
+.bar{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(8px)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700;letter-spacing:.06em;text-decoration:none}
+.brand i{width:10px;height:10px;background:var(--y);display:inline-block;animation:blink 1.6s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+nav{display:flex;gap:2px;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+nav a{text-decoration:none;color:var(--muted);padding:6px 10px}nav a:hover{color:var(--y)}
+@media(max-width:780px){nav{display:none}}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 20px;background:var(--y);color:var(--yk);font:700 13px var(--mono);text-transform:uppercase;letter-spacing:.06em;transition:transform .12s,filter .15s}
+.btn:hover{filter:brightness(1.08)}.btn:active{transform:scale(.97)}.btn.sm{height:34px;padding:0 14px;font-size:12px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+/* hero */
+.hero{padding:96px 0 40px;position:relative}
+.tag{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.tag b{color:var(--y);font-weight:600}
+.hero h1{font:700 clamp(46px,9vw,120px)/.9 var(--mono);letter-spacing:-.06em;margin:22px 0 0;text-transform:uppercase}
+.hero h1 .l{display:block;overflow:hidden}.hero h1 .l>span{display:block}
+.js .hero h1 .l>span{transform:translateY(105%);transition:transform .9s var(--ease)}
+.js .hero h1 .l:nth-child(2)>span{transition-delay:.08s}.js .hero.in h1 .l>span{transform:none}
+.hero h1 em{font-style:normal;color:var(--y)}
+.hero-foot{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:end;margin-top:44px}
+@media(max-width:820px){.hero-foot{grid-template-columns:1fr}}
+.hero p{margin:0;color:var(--ink2);font-size:15px;max-width:52ch}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);background:var(--surface)}
+.stats div{padding:14px 16px;border-left:1px solid var(--line)}.stats div:first-child{border-left:0}
+.stats b{display:block;font-size:26px;color:var(--y);letter-spacing:-.03em}.stats span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+/* pixels */
+.pixels{display:grid;grid-template-columns:repeat(36,1fr);gap:4px;margin:56px 0 0;opacity:.9}
+.pixels i{aspect-ratio:1;background:var(--line);animation:pw 3.2s ease-in-out infinite;animation-delay:var(--d)}
+@keyframes pw{0%,15%,80%,to{opacity:.6;transform:none}40%{opacity:.25;transform:translateY(-3px) scale(.6)}55%{opacity:1;background:var(--y);transform:translateY(1px)}}
+/* ticker */
+.ticker{border-block:1px solid var(--line);overflow:hidden;background:var(--surface);margin-top:56px}
+.tt{display:flex;width:max-content;animation:tape 60s linear infinite}.ticker span{padding:12px 22px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}.ticker span.s{color:var(--y);padding:12px 0}
+@keyframes tape{to{transform:translateX(-50%)}}
+/* sections */
+section{padding:88px 0;position:relative}
+.sh{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:end;margin-bottom:36px}
+@media(max-width:820px){.sh{grid-template-columns:1fr}}
+.sh h2{font:700 clamp(32px,5vw,64px)/.95 var(--mono);letter-spacing:-.05em;margin:12px 0 0;text-transform:uppercase}
+.sh h2 em{font-style:normal;color:var(--y)}.sh p{margin:0;color:var(--ink2);max-width:46ch;justify-self:end}
+/* cells grid (track-card style) */
+.cells{display:grid;border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card);padding:24px;position:relative;overflow:hidden;transition:color .2s}
+.cell::before{content:"";position:absolute;inset:0;background:var(--y);transform:scaleY(0);transform-origin:50% 100%;transition:transform .35s var(--ease);z-index:0}
+.cell>*{position:relative;z-index:1}
+.cell.hov:hover::before{transform:scaleY(1)}.cell.hov:hover{color:var(--yk)}.cell.hov:hover .k,.cell.hov:hover p{color:var(--yk)}
+.k{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.cell h3{font:700 22px/1.15 var(--mono);letter-spacing:-.03em;margin:28px 0 8px;text-transform:uppercase}.cell p{margin:0;color:var(--ink2);font-size:13px}
+/* form */
+.form{display:grid;grid-template-columns:1.1fr 1fr;border:1px solid var(--line);background:var(--card)}
+@media(max-width:900px){.form{grid-template-columns:1fr}}
+.form>div{padding:28px}.form>div+div{border-left:1px solid var(--line)}
+label.l{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px}
+textarea{width:100%;min-height:96px;background:var(--bg);border:1px solid var(--line);color:var(--ink);font:13px var(--mono);padding:12px;resize:vertical}
+textarea:focus{outline:1px solid var(--y)}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.chip{all:unset;cursor:pointer;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px 10px;font-size:12px;display:flex;justify-content:space-between;gap:6px;transition:background .15s}
+.chip small{color:var(--muted)}.chip:hover{background:var(--surface)}
+.chip[aria-pressed=true]{background:var(--y);color:var(--yk)}.chip[aria-pressed=true] small{color:var(--yk)}
+@media(max-width:560px){.chips{grid-template-columns:repeat(2,1fr)}}
+.toggle{display:flex;gap:10px;align-items:flex-start;margin:18px 0 0;font-size:13px;cursor:pointer}
+.toggle input{accent-color:var(--y);width:16px;height:16px;margin-top:3px}.toggle small{display:block;color:var(--muted)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:22px}.muted{color:var(--muted);font-size:12px}
+.preset{all:unset;cursor:pointer;font-size:12px;color:var(--y);border-bottom:1px dashed var(--y)}
+/* results */
+.rank{display:grid;grid-template-columns:repeat(5,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line)}
+@media(max-width:900px){.rank{grid-template-columns:repeat(2,1fr)}}
+.rank .cell{padding:20px;cursor:pointer}.rank .cell.best{background:var(--y);color:var(--yk)}.rank .cell.best .k,.rank .cell.best p{color:var(--yk)}
+.rank .amt{font:700 clamp(22px,2.6vw,32px)/1 var(--mono);letter-spacing:-.04em;margin:22px 0 6px}
+.note{font-size:12.5px;color:var(--ink2);border-left:2px solid var(--y);padding-left:12px;margin:14px 0 0}
+.big{font:700 clamp(52px,9vw,104px)/.9 var(--mono);letter-spacing:-.06em;color:var(--y);margin:16px 0 8px}
+.tips{display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line);margin-top:26px}
+@media(max-width:900px){.tips{grid-template-columns:1fr}}
+.tips .cell b{display:block;margin:18px 0 6px}.save{color:var(--good);font-weight:600}
+details{margin-top:24px;border-top:1px solid var(--line);padding-top:14px}summary{cursor:pointer;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:500}.r{text-align:right}
+ul.plain{margin:10px 0 0;padding-left:18px;color:var(--ink2);font-size:12.5px}
+pre{background:var(--bg);border:1px solid var(--line);padding:12px;font-size:12px;white-space:pre-wrap;word-break:break-all;margin:10px 0 0}
+.badge{font-size:11px;padding:2px 8px;border:1px solid currentColor;text-transform:uppercase;letter-spacing:.05em;margin-left:8px;vertical-align:middle}
+.proof{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line)}
+@media(max-width:900px){.proof{grid-template-columns:repeat(2,1fr)}}
+.proof .cell b{display:block;font-size:24px;color:var(--y);margin:22px 0 4px;word-break:break-all}
+footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);font-size:12px}
+#out{display:none;margin-top:40px}
+/* reveal (nearhackathon timing) */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .75s var(--ease),transform .75s var(--ease);transition-delay:var(--rd,0s)}.reveal.revealed{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.reveal{opacity:1;transform:none;transition:none}.js .hero h1 .l>span{transform:none}}
+</style>
+</head>
+<body>
+<header class="bar"><div class="wrap">
+  <a class="brand" href="#top"><i></i>TAXPILOT</a>
+  <nav><a href="#try">01 Try</a><a href="#case">02 Live case</a><a href="#how">03 How</a><a href="#proof">04 Onchain</a></nav>
+  <a class="btn sm" href="#try">Get my report</a>
+</div></header>
+
+<div class="hero wrap" id="top">
+  <span class="tag">[ <b>BNB</b> / AGENT 2779 / BSC TESTNET ]</span>
+  <h1><span class="l"><span>Your crypto taxes,</span></span><span class="l"><span><em>any country.</em></span></span></h1>
+  <div class="hero-foot">
+    <p>Paste your wallets, pick the countries you could live in. TaxPilot reads the chain, applies each country's 2026 law, and tells you what you owe and how to legally owe less.</p>
+    <div class="stats"><div><b class="num">24</b><span>verified countries</span></div><div><b class="num">0</b><span>numbers made by AI</span></div><div><b class="num">$0.10</b><span>per report</span></div></div>
+  </div>
+  <div class="pixels" id="px" aria-hidden="true"></div>
+</div>
+<div class="ticker" aria-hidden="true"><div class="tt" id="tt"></div></div>
+
+<section id="try"><div class="wrap">
+  <div class="sh"><div><span class="tag">01 / TRY IT</span><h2>Two<br><em>questions</em></h2></div><p>Your BSC wallets, and where you are (or could be) tax resident. Nomad or several passports? Pick several countries and compare.</p></div>
+  <form class="form" id="f">
+    <div>
+      <label class="l" for="ws">1 · BSC wallets</label>
+      <textarea id="ws" placeholder="0x…  (one or more)"></textarea>
+      <div class="row"><button type="button" class="preset" id="czp">Try CZ's public wallet →</button></div>
+      <label class="toggle"><input type="checkbox" id="nomad"><span>I'm a nomad / I hold several passports<small>Compare every country you could be tax resident in.</small></span></label>
+      <div class="row"><button class="btn" type="submit">Get my report</button><span class="muted">Tax year 2026</span></div>
+    </div>
+    <div><label class="l">2 · Tax residence</label><div class="chips" id="chips"></div></div>
+  </form>
+  <div id="out"></div>
+</div></section>
+
+<section id="case" style="border-top:1px solid var(--line)"><div class="wrap">
+  <div class="sh"><div><span class="tag">02 / LIVE CASE · CZ</span><h2>What if CZ<br><em>had sold?</em></h2></div><p>CZ's public BNB Chain wallet sent 1,436 BNB (≈ €753,600) to Giggle Academy on 16 Aug 2026. It was a gift. What if it had been a sale of BNB bought at the 2017 ICO price?</p></div>
+  <div class="rank" id="czrank"></div>
+  <p class="note">Read live from BNB Chain (official contracts only). What-if: the outflow is treated as a sale, cost basis €0.13/BNB (ICO, July 2017). Germany and Portugal exempt gains held over a year; the UAE and Switzerland don't tax private gains.</p>
+</div></section>
+
+<section id="how" style="border-top:1px solid var(--line)"><div class="wrap">
+  <div class="sh"><div><span class="tag">03 / HOW IT WORKS</span><h2>An agent<br><em>onchain</em></h2></div><p>Built with BNB Agent Studio. Sold per report over ERC-8183, paid in stablecoins.</p></div>
+  <div class="cells" style="grid-template-columns:repeat(3,1fr)" id="how3">
+    <div class="cell hov"><span class="k">[ 01 / READ ]</span><h3>Reads your wallets</h3><p>Real BSC transfers, official token contracts only, priced in EUR at the date of each move.</p></div>
+    <div class="cell hov"><span class="k">[ 02 / APPLY ]</span><h3>Applies the law</h3><p>Fixed code per country: flat tax, holding periods, allowances, crypto-to-crypto rules. Sources cited.</p></div>
+    <div class="cell hov"><span class="k">[ 03 / DELIVER ]</span><h3>Paid & delivered</h3><p>Buyer funds an ERC-8183 job, the agent submits the report onchain. The AI only explains.</p></div>
+  </div>
+</div></section>
+
+<section id="proof" style="border-top:1px solid var(--line)"><div class="wrap">
+  <div class="sh"><div><span class="tag">04 / ONCHAIN PROOF</span><h2>Live on<br><em>BNB testnet</em></h2></div><p>Deployed on the BNB Chain managed trial and verified onchain.</p></div>
+  <div class="proof">
+    <div class="cell hov"><span class="k">ERC-8004 agent</span><b>#2779</b><p><a href="https://bnbagent-api.bnbchain.world/v1/rt/01M73CN6NSE79YPNZEW68SD3PB/.well-known/agent-card.json">Agent card →</a></p></div>
+    <div class="cell hov"><span class="k">Agent wallet</span><b>0x1EC4…cf34</b><p><a href="https://testnet.bscscan.com/address/0x1EC4aC0CE85421eB8B8FAc6c351Eb96D56e1cf34">BscScan →</a></p></div>
+    <div class="cell hov"><span class="k">Paid job #1726</span><b>0.10 U</b><p><a href="https://testnet.bscscan.com/tx/0xa4f518c286473041c2fbd5183f25e540b5de2ce1179f8e6dc66d641cff711dc8">Funding tx →</a></p></div>
+    <div class="cell hov"><span class="k">Paid job #1730</span><b>CZ wallet</b><p><a href="https://testnet.bscscan.com/tx/0xf75b92cd2bd0bb66faa58a0b7d123550ac12daee2a6e02d71ff2717d35bba1cf">Funding tx →</a></p></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">Automatic estimate from onchain data, not tax advice. 24 countries' rules verified on 10 Nov 2026 against cited 2026 sources. Built at BNB Builder Sessions Paris.</div></footer>
+
+<script>
+"use strict";
+var TaxPilot = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/taxEngine.ts
+  var taxEngine_exports = {};
+  __export(taxEngine_exports, {
+    COUNTRY_NAMES: () => COUNTRY_NAMES,
+    DEMO: () => DEMO,
+    GENERIC: () => GENERIC,
+    RULES: () => RULES,
+    SUPPORTED: () => SUPPORTED,
+    compareResidencies: () => compareResidencies,
+    computeGeneric: () => computeGeneric,
+    computeTax: () => computeTax,
+    normalizeCountry: () => normalizeCountry
+  });
+  var RULES = {
+    FR: {
+      name: "France",
+      version: "FR-2026.1 (v\xE9rifi\xE9 le 10/11/2026)",
+      flatTax: 0.314,
+      // 12.8% IR + 18.6% prélèvements sociaux (LFSS 2026)
+      ir: 0.128,
+      social: 0.186,
+      exemptDisposalsEur: 305
+    },
+    DE: {
+      name: "Germany",
+      version: "DE-2026.1 (verified 10/11/2026)",
+      holdingDaysTaxFree: 365,
+      // tax-free when held MORE than one year
+      freigrenzeEur: 1e3,
+      // §23 EStG, cliff (not an allowance)
+      defaultIncomeTaxRate: 0.42
+    },
+    GB: {
+      name: "United Kingdom",
+      version: "UK-2026/27.1 (verified 10/11/2026)",
+      annualExemptGbp: 3e3,
+      basicRate: 0.18,
+      higherRate: 0.24,
+      defaultEurToGbp: 0.87
+    }
+  };
+  var SUPPORTED = ["FR", "DE", "GB", "AE", "SG", "HK", "MY", "CH", "GE", "PT", "IT", "BE", "AT", "IE", "ES", "NL", "CY", "PL", "US", "CA", "AU", "JP", "IN", "KR"];
+  var COUNTRY_NAMES = { FR: "France", DE: "Germany", GB: "United Kingdom", AE: "United Arab Emirates", SG: "Singapore", HK: "Hong Kong", MY: "Malaysia", CH: "Switzerland", GE: "Georgia", PT: "Portugal", IT: "Italy", BE: "Belgium", AT: "Austria", IE: "Ireland", ES: "Spain", NL: "Netherlands", CY: "Cyprus", PL: "Poland", US: "United States", CA: "Canada", AU: "Australia", JP: "Japan", IN: "India", KR: "South Korea" };
+  var DISCLAIMER = "Estimation automatique \xE0 partir des donn\xE9es onchain, pas un conseil fiscal. V\xE9rifie avec un professionnel avant de d\xE9clarer.";
+  var r2 = (n) => Math.round(n * 100) / 100;
+  var days = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+  var addDays = (d, n) => new Date(Date.parse(d) + n * 864e5).toISOString().slice(0, 10);
+  function normalizeCountry(c) {
+    const k = c.trim().toUpperCase();
+    const map = {
+      UK: "GB",
+      "UNITED KINGDOM": "GB",
+      ENGLAND: "GB",
+      "ROYAUME-UNI": "GB",
+      GB: "GB",
+      FRANCE: "FR",
+      FR: "FR",
+      GERMANY: "DE",
+      ALLEMAGNE: "DE",
+      DEUTSCHLAND: "DE",
+      DE: "DE"
+    };
+    return map[k] ?? k;
+  }
+  function sorted(events) {
+    return [...events].sort((a, b) => a.date.localeCompare(b.date));
+  }
+  function holdingsAfter(events, untilDate, inclusive = true) {
+    const h = {};
+    for (const e of sorted(events)) {
+      if (untilDate && (inclusive ? e.date > untilDate : e.date >= untilDate)) break;
+      if (e.type === "buy") h[e.asset] = (h[e.asset] ?? 0) + e.qty;
+      else {
+        h[e.asset] = (h[e.asset] ?? 0) - e.qty;
+        if (e.type === "swap" && e.toAsset) h[e.toAsset] = (h[e.toAsset] ?? 0) + (e.toQty ?? 0);
+      }
+    }
+    for (const k of Object.keys(h)) if (Math.abs(h[k]) < 1e-12) delete h[k];
+    return h;
+  }
+  function holdingsList(input) {
+    const h = holdingsAfter(input.events);
+    return Object.entries(h).map(([asset, qty]) => ({ asset, qty: r2(qty), valueEur: r2(qty * (input.currentPrices[asset] ?? 0)) }));
+  }
+  function computeFR(input) {
+    const R = RULES.FR;
+    let pta = 0;
+    const evs = sorted(input.events);
+    const taxable = [];
+    let proceedsYear = 0;
+    for (const e of evs) {
+      if (e.type === "buy") {
+        pta += e.eur;
+        continue;
+      }
+      if (e.type === "swap") continue;
+      const before = holdingsAfter(evs, e.date, false);
+      const px = input.prices[e.date] ?? {};
+      let V = 0;
+      for (const [a, q] of Object.entries(before)) V += q * (px[a] ?? 0);
+      if (V <= 0) V = e.eur;
+      const share = pta * (e.eur / V);
+      const gain = e.eur - share;
+      pta -= share;
+      if (e.date.startsWith(String(input.year))) {
+        proceedsYear += e.eur;
+        taxable.push({ date: e.date, asset: e.asset, proceeds: r2(e.eur), gain: r2(gain), note: `PV = ${r2(e.eur)} \u2212 ${r2(pta + share)} \xD7 ${r2(e.eur)} / ${r2(V)}` });
+      }
+    }
+    const net = taxable.reduce((s, t) => s + t.gain, 0);
+    const exemptAll = proceedsYear <= R.exemptDisposalsEur;
+    const base = exemptAll ? 0 : Math.max(0, net);
+    const tax = base * R.flatTax;
+    const tips = [];
+    const fiatSales = taxable.length;
+    if (fiatSales > 0 && tax > 0)
+      tips.push({
+        title: "Rester en stablecoins au lieu de repasser en euros",
+        detail: `Tes ${fiatSales} ventes en euros ont d\xE9clench\xE9 l'imp\xF4t. Un \xE9change crypto \u2192 stablecoin (USDT, USDC) n'est pas imposable en France : ne convertis en euros que ce dont tu as r\xE9ellement besoin.`,
+        saving: r2(tax)
+      });
+    if (!exemptAll && proceedsYear < 2 * R.exemptDisposalsEur)
+      tips.push({ title: "Seuil de 305 \u20AC de cessions", detail: `Tes cessions totales (${r2(proceedsYear)} \u20AC) d\xE9passent \xE0 peine 305 \u20AC. En \xE9talant sur deux ann\xE9es civiles, tu restes exon\xE9r\xE9.`, saving: r2(tax) });
+    const tmiCases = [0, 0.11];
+    if (base > 0) {
+      const tmi = input.params?.frTmi;
+      const best = tmi !== void 0 ? tmi : 0;
+      const bareme = base * (best + R.social);
+      if (bareme < tax)
+        tips.push({ title: "Option pour le bar\xE8me progressif", detail: `Si ta tranche marginale est ${tmi !== void 0 ? Math.round(tmi * 100) + " %" : "0 % ou 11 %"}, l'option bar\xE8me remplace les 12,8 % d'imp\xF4t par ta TMI (pr\xE9l\xE8vements sociaux de 18,6 % inchang\xE9s).`, saving: r2(tax - bareme) });
+    }
+    const now = holdingsAfter(evs);
+    let vNow = 0;
+    for (const [a, q] of Object.entries(now)) vNow += q * (input.currentPrices[a] ?? 0);
+    if (vNow > 0 && pta > vNow && net > 0) {
+      const saving = Math.min(pta - vNow, net) * R.flatTax;
+      if (saving > 0) tips.push({ title: "R\xE9aliser une moins-value avant le 31/12", detail: `Ton portefeuille vaut ${r2(vNow)} \u20AC pour un prix d'acquisition restant de ${r2(pta)} \u20AC. Une cession avant la fin de l'ann\xE9e cr\xE9e une moins-value imputable sur tes gains de ${input.year}.`, saving: r2(saving) });
+    }
+    void tmiCases;
+    return {
+      country: "FR",
+      countryName: R.name,
+      verified: true,
+      rulesVersion: R.version,
+      taxYear: String(input.year),
+      currency: "EUR",
+      taxableEvents: taxable,
+      totals: { proceeds: r2(proceedsYear), netGain: r2(net), exempt: exemptAll ? r2(Math.max(0, net)) : 0, taxableBase: r2(base), taxDue: r2(tax), effectiveRate: net > 0 ? r2(tax / net) : 0 },
+      rulesApplied: [
+        "Flat tax 31,4 % (12,8 % IR + 18,6 % pr\xE9l\xE8vements sociaux, LFSS 2026)",
+        "M\xE9thode globale du prix total d'acquisition (art. 150 VH bis CGI)",
+        "\xC9changes crypto \u2192 crypto non imposables (sursis)",
+        "Exon\xE9ration si cessions annuelles \u2264 305 \u20AC",
+        "Moins-values imputables sur les plus-values de la m\xEAme ann\xE9e"
+      ],
+      tips,
+      holdings: holdingsList(input),
+      obligations: ["Formulaire 2086 (plus-values) et case 3AN/3BN de la 2042-C", "Formulaire 3916-bis pour chaque compte sur une plateforme \xE9trang\xE8re"],
+      disclaimer: DISCLAIMER,
+      source: input.source
+    };
+  }
+  function computeDE(input) {
+    const R = RULES.DE;
+    const rate = input.params?.deIncomeTaxRate ?? R.defaultIncomeTaxRate;
+    const lots = {};
+    const add = (a, date, qty, eur) => (lots[a] ?? (lots[a] = [])).push({ date, qty, unit: eur / qty });
+    const taxable = [];
+    const shortTerm = [];
+    let proceedsYear = 0, exemptLong = 0;
+    for (const e of sorted(input.events)) {
+      if (e.type === "buy") {
+        add(e.asset, e.date, e.qty, e.eur);
+        continue;
+      }
+      let left = e.qty;
+      const unitProceeds = e.eur / e.qty;
+      const inYear = e.date.startsWith(String(input.year));
+      let shortGain = 0, longGain = 0;
+      const q = lots[e.asset] ?? [];
+      while (left > 1e-12 && q.length) {
+        const lot = q[0];
+        const take = Math.min(lot.qty, left);
+        const g = take * (unitProceeds - lot.unit);
+        const held = days(lot.date, e.date);
+        if (held > R.holdingDaysTaxFree) longGain += g;
+        else {
+          shortGain += g;
+          if (inYear) shortTerm.push({ date: e.date, asset: e.asset, gain: g, freeOn: addDays(lot.date, R.holdingDaysTaxFree + 1), days: R.holdingDaysTaxFree + 1 - held });
+        }
+        lot.qty -= take;
+        left -= take;
+        if (lot.qty <= 1e-12) q.shift();
+      }
+      if (e.type === "swap" && e.toAsset) add(e.toAsset, e.date, e.toQty ?? 0, e.eur);
+      if (inYear) {
+        proceedsYear += e.eur;
+        exemptLong += longGain;
+        taxable.push({ date: e.date, asset: e.asset, proceeds: r2(e.eur), gain: r2(shortGain + longGain), note: longGain !== 0 && shortGain === 0 ? "held > 1 year: tax-free" : shortGain !== 0 && longGain === 0 ? "held \u2264 1 year: taxable" : "mixed lots (FIFO)" });
+      }
+    }
+    const S = shortTerm.reduce((s, t) => s + t.gain, 0);
+    const underCliff = S < R.freigrenzeEur;
+    const base = underCliff ? 0 : Math.max(0, S);
+    const tax = base * rate;
+    const tips = [];
+    for (const t of shortTerm.filter((x) => x.gain > 0))
+      tips.push({ title: `Wait ${t.days} more day(s) on ${t.asset}`, detail: `Your ${t.asset} disposal on ${t.date} was ${t.days} day(s) short of the one-year rule. Selling on or after ${t.freeOn} would have been tax-free.`, saving: r2(underCliff ? 0 : Math.min(t.gain * rate, tax)) });
+    if (!underCliff && S < R.freigrenzeEur * 2)
+      tips.push({ title: "\u20AC1,000 Freigrenze cliff", detail: `Short-term gains of \u20AC${r2(S)} crossed the \u20AC1,000 cliff, so ALL of it is taxed. Pushing \u20AC${r2(S - 999)} of gains into next year keeps this year at zero.`, saving: r2(tax) });
+    const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    for (const [a, q] of Object.entries(lots))
+      for (const lot of q) {
+        const freeOn = addDays(lot.date, R.holdingDaysTaxFree + 1);
+        const unreal = lot.qty * ((input.currentPrices[a] ?? 0) - lot.unit);
+        if (freeOn > today && unreal > 0)
+          tips.push({ title: `Don't sell ${a} before ${freeOn}`, detail: `${r2(lot.qty)} ${a} bought on ${lot.date} carry \u20AC${r2(unreal)} of unrealised gain. Hold until ${freeOn} and it becomes tax-free.`, saving: r2(unreal * rate) });
+      }
+    return {
+      country: "DE",
+      countryName: R.name,
+      verified: true,
+      rulesVersion: R.version,
+      taxYear: String(input.year),
+      currency: "EUR",
+      taxableEvents: taxable,
+      totals: { proceeds: r2(proceedsYear), netGain: r2(S + exemptLong), exempt: r2(exemptLong + (underCliff ? Math.max(0, S) : 0)), taxableBase: r2(base), taxDue: r2(tax), effectiveRate: S + exemptLong > 0 ? r2(tax / (S + exemptLong)) : 0 },
+      rulesApplied: [
+        "\xA723 EStG private disposal: tax-free after holding > 1 year",
+        "Crypto-to-crypto swaps are disposals",
+        "FIFO lot matching",
+        "\u20AC1,000 Freigrenze on short-term gains (cliff, not an allowance)",
+        `Personal income tax rate assumed: ${Math.round(rate * 100)}%`
+      ],
+      tips,
+      holdings: holdingsList(input),
+      obligations: ["Anlage SO (sonstige Eink\xFCnfte) in the annual return"],
+      disclaimer: DISCLAIMER,
+      source: input.source
+    };
+  }
+  function computeGB(input) {
+    var _a, _b, _c;
+    const R = RULES.GB;
+    const fx = input.params?.eurToGbp ?? R.defaultEurToGbp;
+    const rate = input.params?.ukHigherRate === false ? R.basicRate : R.higherRate;
+    const start = `${input.year}-04-06`, end = `${input.year + 1}-04-05`;
+    const pool = {};
+    const taxable = [];
+    let proceedsYear = 0;
+    for (const e of sorted(input.events)) {
+      const gbp = e.eur * fx;
+      if (e.type === "buy") {
+        const p2 = pool[_a = e.asset] ?? (pool[_a] = { qty: 0, cost: 0 });
+        p2.qty += e.qty;
+        p2.cost += gbp;
+        continue;
+      }
+      const p = pool[_b = e.asset] ?? (pool[_b] = { qty: 0, cost: 0 });
+      const cost = p.qty > 0 ? p.cost * (e.qty / p.qty) : 0;
+      p.qty -= e.qty;
+      p.cost -= cost;
+      if (e.type === "swap" && e.toAsset) {
+        const t = pool[_c = e.toAsset] ?? (pool[_c] = { qty: 0, cost: 0 });
+        t.qty += e.toQty ?? 0;
+        t.cost += gbp;
+      }
+      if (e.date >= start && e.date <= end) {
+        proceedsYear += gbp;
+        taxable.push({ date: e.date, asset: e.asset, proceeds: r2(gbp), gain: r2(gbp - cost), note: "Section 104 pool cost" });
+      }
+    }
+    const net = taxable.reduce((s, t) => s + t.gain, 0);
+    const base = Math.max(0, net - R.annualExemptGbp);
+    const tax = base * rate;
+    const tips = [];
+    if (net < R.annualExemptGbp)
+      tips.push({ title: "Use your unused \xA33,000 allowance", detail: `You only used \xA3${r2(Math.max(0, net))} of your \xA33,000 annual exempt amount. Realising up to \xA3${r2(R.annualExemptGbp - Math.max(0, net))} more gains before 5 April (rebuy after 30 days, bed-and-breakfast rule) resets your cost basis higher for free.`, saving: r2((R.annualExemptGbp - Math.max(0, net)) * rate) });
+    if (base > 0) {
+      let losses = 0;
+      for (const [a, p] of Object.entries(pool)) {
+        const val = p.qty * (input.currentPrices[a] ?? 0) * fx;
+        if (p.qty > 0 && val < p.cost) losses += p.cost - val;
+      }
+      if (losses > 0)
+        tips.push({ title: "Harvest unrealised losses before 5 April", detail: `Your pools hold \xA3${r2(losses)} of unrealised losses. Disposing of them offsets this year's gains (wait 30 days before rebuying).`, saving: r2(Math.min(losses, base) * rate) });
+      tips.push({ title: "Transfer to your spouse before selling", detail: "Transfers between spouses/civil partners are no-gain/no-loss, and each has their own \xA33,000 allowance.", saving: r2(Math.min(base, R.annualExemptGbp) * rate) });
+    }
+    return {
+      country: "GB",
+      countryName: R.name,
+      verified: true,
+      rulesVersion: R.version,
+      taxYear: `${input.year}/${String(input.year + 1).slice(2)} (6 Apr\u20135 Apr)`,
+      currency: "GBP",
+      taxableEvents: taxable,
+      totals: { proceeds: r2(proceedsYear), netGain: r2(net), exempt: r2(Math.min(Math.max(0, net), R.annualExemptGbp)), taxableBase: r2(base), taxDue: r2(tax), effectiveRate: net > 0 ? r2(tax / net) : 0 },
+      rulesApplied: [
+        "Capital Gains Tax: 18% basic / 24% higher rate (since 30 Oct 2024)",
+        "\xA33,000 annual exempt amount (2026/27)",
+        "Section 104 pooling (same-day/30-day matching simplified)",
+        "Crypto-to-crypto swaps are disposals",
+        `EUR\u2192GBP at ${fx} (indicative)`
+      ],
+      tips,
+      holdings: holdingsList(input),
+      obligations: ["Self Assessment capital gains pages (SA108) by 31 January"],
+      disclaimer: DISCLAIMER,
+      source: input.source
+    };
+  }
+  function computeTax(input) {
+    const c = normalizeCountry(input.country);
+    const inp = { ...input, country: c };
+    if (c === "FR") return computeFR(inp);
+    if (c === "DE") return computeDE(inp);
+    if (c === "GB") return computeGB(inp);
+    if (GENERIC[c]) return computeGeneric(inp, c, GENERIC[c]);
+    return {
+      country: c,
+      countryName: c,
+      verified: false,
+      rulesVersion: "none",
+      taxYear: String(input.year),
+      currency: "EUR",
+      taxableEvents: [],
+      totals: { proceeds: 0, netGain: 0, exempt: 0, taxableBase: 0, taxDue: 0, effectiveRate: 0 },
+      rulesApplied: ["Not supported yet: this country's rules are not verified. Supported: FR DE GB AE SG HK MY CH GE PT IT BE AT IE ES NL CY PL US CA AU JP IN KR"],
+      tips: [],
+      holdings: holdingsList(inp),
+      obligations: [],
+      disclaimer: DISCLAIMER,
+      source: input.source
+    };
+  }
+  var DEMO = {
+    year: 2026,
+    source: "demo portfolio (BNB / CAKE / USDT on BSC)",
+    events: [
+      { date: "2025-02-10", type: "buy", asset: "BNB", qty: 10, eur: 5500 },
+      { date: "2025-06-01", type: "buy", asset: "CAKE", qty: 2e3, eur: 4e3 },
+      { date: "2026-01-15", type: "swap", asset: "BNB", qty: 6, eur: 4440, toAsset: "USDT", toQty: 4800 },
+      { date: "2026-03-20", type: "sell", asset: "BNB", qty: 3, eur: 2400 },
+      { date: "2026-05-05", type: "sell", asset: "USDT", qty: 1500, eur: 1380 },
+      { date: "2026-09-01", type: "sell", asset: "CAKE", qty: 1e3, eur: 3500 }
+    ],
+    prices: {
+      "2026-01-15": { BNB: 740, CAKE: 2.4, USDT: 0.925 },
+      "2026-03-20": { BNB: 800, CAKE: 2.6, USDT: 0.92 },
+      "2026-05-05": { BNB: 820, CAKE: 3, USDT: 0.92 },
+      "2026-09-01": { BNB: 860, CAKE: 3.5, USDT: 0.87 }
+    },
+    currentPrices: { BNB: 900, CAKE: 1.6, USDT: 0.86 }
+  };
+  function compareResidencies(input, countries) {
+    const uniq = [...new Set(countries.map(normalizeCountry))];
+    const reports = uniq.map((c) => computeTax({ ...input, country: c }));
+    const fx = input.params?.eurToGbp ?? RULES.GB.defaultEurToGbp;
+    const ranking = reports.map((r) => ({
+      country: r.country,
+      countryName: r.countryName,
+      verified: r.verified,
+      taxDueEur: r2(r.currency === "GBP" ? r.totals.taxDue / fx : r.totals.taxDue),
+      currency: r.currency,
+      taxDue: r.totals.taxDue,
+      bestTip: r.tips.length ? [...r.tips].sort((a, b) => b.saving - a.saving)[0].title : null
+    })).sort((a, b) => Number(b.verified) - Number(a.verified) || a.taxDueEur - b.taxDueEur);
+    const notes = [
+      "Crypto gains are taxed where you are tax RESIDENT, not by passport: main home, 183-day presence and centre of economic interests decide (tax treaties break ties).",
+      "Exception: US citizens are taxed by the US on worldwide gains wherever they live (citizenship-based taxation).",
+      "Moving residence mid-year can trigger exit or split-year rules: check before you sell."
+    ];
+    if (uniq.includes("GB")) notes.push("UK tax year runs 6 April to 5 April, so the comparison window differs from calendar-year countries.");
+    return { ranking, cheapest: ranking.find((r) => r.verified)?.country ?? null, notes, reports };
+  }
+  var GENERIC = {
+    AE: { name: "United Arab Emirates", rate: 0, c2cTaxable: false, notes: ["No personal income tax or capital gains tax for individuals."], source: "TokenTax 2026; IMI Daily 2026" },
+    SG: { name: "Singapore", rate: 0, c2cTaxable: false, notes: ["No capital gains tax for individuals, unless the activity is a trade (then income tax)."], source: "IMI Daily 2026; WhereLegalCrypto (Apr 2026)" },
+    HK: { name: "Hong Kong", rate: 0, c2cTaxable: false, notes: ["Territorial system, no capital gains tax; a trading business pays 16.5% profits tax."], source: "TokenTax 2026; IMI Daily 2026" },
+    MY: { name: "Malaysia", rate: 0, c2cTaxable: false, notes: ["No capital gains tax for individuals who are not active traders (LHDN)."], source: "WhereLegalCrypto (Apr 2026); dev.to nomad guide 2026" },
+    CH: { name: "Switzerland", rate: 0, c2cTaxable: false, notes: ["Private wealth gains are tax-free; professional traders are taxed as income.", "Annual cantonal wealth tax (\u22480.1\u20131%) applies to crypto holdings."], source: "LCX (Mar 2026); WhereLegalCrypto (Apr 2026)" },
+    GE: { name: "Georgia", rate: 0, c2cTaxable: false, notes: ["Individual crypto gains are exempt; companies pay 15%."], source: "Koinly (Jan 2026); MEXC 2026" },
+    PT: { name: "Portugal", rate: 0.28, ltDays: 364, ltRate: 0, c2cTaxable: false, notes: ["28% on crypto held less than 365 days, exempt from 365 days.", "Crypto-to-crypto swaps are not taxed."], source: "Koinly (Jan 2026); LCX (Mar 2026); KoinX 2026" },
+    IT: { name: "Italy", rate: 0.33, c2cTaxable: true, notes: ["33% flat from 2026 (26% for euro e-money stablecoins); the old \u20AC2,000 exemption is gone."], source: "KoinX 2026; Mondaq (2026); LCX (Mar 2026)" },
+    BE: { name: "Belgium", rate: 0.1, allowanceEur: 1e4, c2cTaxable: true, notes: ["New 10% capital gains tax from 1 Jan 2026 above a \u20AC10,000 annual exemption; pre-2026 holdings stepped up to their 31 Dec 2025 value.", "Speculative trading: 33%."], source: "CoinTracking deadline calendar 2026" },
+    AT: { name: "Austria", rate: 0.275, c2cTaxable: false, notes: ["27.5% flat (KESt), no holding period.", "Crypto bought before 1 Mar 2021 stays tax-free.", "Crypto-to-crypto swaps are tax-neutral."], source: "CoinTracking deadline calendar 2026" },
+    IE: { name: "Ireland", rate: 0.33, allowanceEur: 1270, c2cTaxable: true, notes: ["33% Capital Gains Tax; \u20AC1,270 annual personal exemption."], source: "KoinX 2026; Mondaq (2026)" },
+    ES: { name: "Spain", bands: [[6e3, 0.19], [5e4, 0.21], [2e5, 0.23], [Infinity, 0.28]], c2cTaxable: true, notes: ["Savings scale: 19% to \u20AC6k, 21% to \u20AC50k, 23% to \u20AC200k, 28% above.", "Losses carry forward 4 years."], source: "LCX (Mar 2026); Crypto Tax Europe 2026 guide" },
+    NL: { name: "Netherlands", rate: 0, c2cTaxable: false, notes: ["No tax on realised gains: crypto is taxed in Box 3 on a deemed return on net wealth (\u224836% of an assumed 6.17% return), above \u2248\u20AC57,000."], source: "LCX (Mar 2026)" },
+    CY: { name: "Cyprus", rate: 0.08, c2cTaxable: true, lossOffset: true, notes: ["8% flat on crypto disposals from 1 Jan 2026; losses offset only within the same year."], source: "LCX (Mar 2026); Mondaq (2026)" },
+    PL: { name: "Poland", rate: 0.19, c2cTaxable: false, notes: ["19% flat (PIT-38) on net crypto profit, no holding-period exemption.", "Crypto-to-crypto swaps are not taxed."], source: "Freenance EU 2026 guide" },
+    US: { name: "United States", rate: 0.24, ltDays: 365, ltRate: 0.15, c2cTaxable: true, assumption: "assumes the 24% federal bracket (short term) and 15% long-term rate; state tax not included", notes: ["Held \u2264 1 year: ordinary rates 10\u201337%. Held > 1 year: 0/15/20%.", "US citizens are taxed on worldwide gains wherever they live."], source: "IRS Topic 409 via KoinX 2026; TokenTax 2026 (Rev. Proc. 2025-32)" },
+    CA: { name: "Canada", rate: 0.15, c2cTaxable: true, assumption: "50% inclusion \xD7 \u224830% combined marginal rate", notes: ["Only 50% of a capital gain is added to income at your marginal rate (adjusted cost base method)."], source: "Crypto tax guide 2026 (CRA rules); MEXC 2026" },
+    AU: { name: "Australia", rate: 0.3, ltDays: 365, ltRate: 0.15, c2cTaxable: true, assumption: "assumes the 30% bracket; 50% CGT discount after 12 months", notes: ["Gains taxed at your income rate; 50% CGT discount for assets held over 12 months."], source: "CoinTracking Australia guide (Jan 2026); Crypto tax guide 2026" },
+    JP: { name: "Japan", rate: 0.3, c2cTaxable: true, assumption: "miscellaneous income, assumes a \u224830% combined rate (15\u201355% scale)", notes: ["2026 is a transition year: gains are still miscellaneous income up to 55%; a 20% separate tax is legislated for later."], source: "KoinX 2026; MEXC 2026" },
+    IN: { name: "India", rate: 0.3, c2cTaxable: true, lossOffset: false, notes: ["30% flat on virtual digital assets plus 1% TDS; losses cannot offset gains."], source: "KoinX 2026; MEXC 2026" },
+    KR: { name: "South Korea", rate: 0, c2cTaxable: false, notes: ["The planned 22% crypto tax is delayed to 2027: no tax on individual gains in 2026."], source: "KoinX 2026" }
+  };
+  function computeGeneric(input, code, rule) {
+    const lots = {};
+    const add = (a, l) => (lots[a] ?? (lots[a] = [])).push(l);
+    const taxable = [];
+    let st = 0, lt = 0, proceeds = 0;
+    const shortList = [];
+    for (const e of sorted(input.events)) {
+      if (e.type === "buy") {
+        add(e.asset, { date: e.date, qty: e.qty, unit: e.eur / e.qty });
+        continue;
+      }
+      const q = lots[e.asset] ?? [];
+      let left = e.qty;
+      if (e.type === "swap" && !rule.c2cTaxable && e.toAsset) {
+        const ratio = (e.toQty ?? 0) / e.qty;
+        while (left > 1e-12 && q.length) {
+          const l = q[0], take = Math.min(l.qty, left);
+          add(e.toAsset, { date: l.date, qty: take * ratio, unit: l.unit / ratio });
+          l.qty -= take;
+          left -= take;
+          if (l.qty <= 1e-12) q.shift();
+        }
+        continue;
+      }
+      const unitP = e.eur / e.qty, inYear = e.date.startsWith(String(input.year));
+      let g = 0;
+      while (left > 1e-12 && q.length) {
+        const l = q[0], take = Math.min(l.qty, left), gain = take * (unitP - l.unit), held = days(l.date, e.date);
+        if (rule.ltDays !== void 0 && held > rule.ltDays) {
+          if (inYear) lt += gain;
+        } else if (inYear) {
+          st += gain;
+          if (rule.ltDays !== void 0 && gain > 0) shortList.push({ asset: e.asset, date: e.date, gain, days: rule.ltDays + 1 - held, freeOn: addDays(l.date, rule.ltDays + 1) });
+        }
+        g += gain;
+        l.qty -= take;
+        left -= take;
+        if (l.qty <= 1e-12) q.shift();
+      }
+      if (e.type === "swap" && e.toAsset) add(e.toAsset, { date: e.date, qty: e.toQty ?? 0, unit: e.eur / (e.toQty || 1) });
+      if (inYear) {
+        proceeds += e.eur;
+        taxable.push({ date: e.date, asset: e.asset, proceeds: r2(e.eur), gain: r2(g), note: e.type === "swap" ? "swap = disposal" : "sale" });
+      }
+    }
+    if (rule.lossOffset === false) {
+      st = taxable.reduce((s, t) => s + Math.max(0, t.gain), 0);
+      lt = 0;
+    }
+    const net = st + lt;
+    let base = Math.max(0, st), exempt = 0;
+    if (rule.allowanceEur) {
+      if (rule.cliff) {
+        if (base < rule.allowanceEur) {
+          exempt = base;
+          base = 0;
+        }
+      } else {
+        exempt = Math.min(base, rule.allowanceEur);
+        base -= exempt;
+      }
+    }
+    const taxOn = (b) => {
+      if (rule.bands) {
+        let t = 0, prev = 0;
+        for (const [cap, r] of rule.bands) {
+          const slice = Math.max(0, Math.min(b, cap) - prev);
+          t += slice * r;
+          prev = cap;
+          if (b <= cap) break;
+        }
+        return t;
+      }
+      return b * (rule.rate ?? 0);
+    };
+    const ltTax = Math.max(0, lt) * (rule.ltRate ?? rule.rate ?? 0);
+    const tax = taxOn(base) + ltTax;
+    if (rule.ltRate === 0) exempt += Math.max(0, lt);
+    const tips = [];
+    const effRate = base > 0 ? taxOn(base) / base : rule.rate ?? 0;
+    for (const s of shortList) {
+      const save = s.gain * (effRate - (rule.ltRate ?? effRate));
+      if (save > 0) tips.push({ title: `Wait ${s.days} more day(s) on ${s.asset}`, detail: `Your ${s.asset} disposal on ${s.date} was short of the ${rule.ltDays + 1}-day rule. From ${s.freeOn} the rate drops to ${Math.round((rule.ltRate ?? 0) * 100)}%.`, saving: r2(Math.min(save, tax)) });
+    }
+    if (!rule.c2cTaxable && tax > 0) tips.push({ title: "Stay in crypto or stablecoins", detail: "Crypto-to-crypto swaps are not taxed here: only cash-outs to fiat are. Convert only what you need.", saving: r2(tax) });
+    if (rule.allowanceEur && !rule.cliff && Math.max(0, st) < rule.allowanceEur) tips.push({ title: `Use your \u20AC${rule.allowanceEur.toLocaleString("en-US")} annual exemption`, detail: `You used \u20AC${r2(Math.max(0, st))} of it. Realising more gains before 31 December is tax-free up to the limit.`, saving: r2((rule.allowanceEur - Math.max(0, st)) * effRate) });
+    return {
+      country: code,
+      countryName: rule.name,
+      verified: true,
+      rulesVersion: `${code}-2026.1 (verified 10/11/2026: ${rule.source})`,
+      taxYear: String(input.year),
+      currency: "EUR",
+      taxableEvents: taxable,
+      totals: { proceeds: r2(proceeds), netGain: r2(net), exempt: r2(exempt), taxableBase: r2(base + (rule.ltRate ? Math.max(0, lt) : 0)), taxDue: r2(tax), effectiveRate: net > 0 ? r2(tax / net) : 0 },
+      rulesApplied: [...rule.notes, ...rule.assumption ? [`Assumption: ${rule.assumption}`] : [], `Crypto-to-crypto swaps ${rule.c2cTaxable ? "are" : "are not"} taxable`, "Amounts in EUR (converted), FIFO lots"],
+      tips,
+      holdings: holdingsList(input),
+      obligations: [`Sources: ${rule.source}`],
+      disclaimer: DISCLAIMER,
+      source: input.source
+    };
+  }
+  return __toCommonJS(taxEngine_exports);
+})();
+
+</script>
+<script>
+const E=TaxPilot,$=(i)=>document.getElementById(i),CZ={"ranking":[{"country":"DE","countryName":"Germany","verified":true,"taxDueEur":0,"currency":"EUR","taxDue":0,"bestTip":"Don't sell WBNB before 2027-11-07"},{"country":"PT","countryName":"Portugal","verified":true,"taxDueEur":0,"currency":"EUR","taxDue":0,"bestTip":null},{"country":"AE","countryName":"United Arab Emirates","verified":true,"taxDueEur":0,"currency":"EUR","taxDue":0,"bestTip":null},{"country":"CH","countryName":"Switzerland","verified":true,"taxDueEur":0,"currency":"EUR","taxDue":0,"bestTip":null},{"country":"US","countryName":"United States","verified":true,"taxDueEur":113012.98,"currency":"EUR","taxDue":113012.98,"bestTip":null},{"country":"GB","countryName":"United Kingdom","verified":true,"taxDueEur":179993.17,"currency":"GBP","taxDue":156594.06,"bestTip":"Transfer to your spouse before selling"},{"country":"ES","countryName":"Spain","verified":true,"taxDueEur":199837.56,"currency":"EUR","taxDue":199837.56,"bestTip":null},{"country":"JP","countryName":"Japan","verified":true,"taxDueEur":226025.95,"currency":"EUR","taxDue":226025.95,"bestTip":null},{"country":"FR","countryName":"France","verified":true,"taxDueEur":236573.83,"currency":"EUR","taxDue":236573.83,"bestTip":"Rester en stablecoins au lieu de repasser en euros"},{"country":"IT","countryName":"Italy","verified":true,"taxDueEur":248628.55,"currency":"EUR","taxDue":248628.55,"bestTip":null}],"ev":[{"date":"2026-08-16","asset":"BNB","proceeds":753606.5,"gain":753419.84,"note":"PV = 753606.5 − 186.66 × 753606.5 / 753606.5"}]};
+const esc=(s)=>String(s).replace(/[&<>"]/g,(m)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const fmt=(n,c)=>(n<0?"−":"")+(c==="GBP"?"£":"€")+Math.abs(n).toLocaleString("en-US",{maximumFractionDigits:0});
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+// pixels + ticker
+$("px").innerHTML=Array.from({length:72},(_,i)=>`<i style="--d:${((i*37)%29)/10}s"></i>`).join("");
+const tk=["France 31.4% flat tax","Germany 0% after 1 year","Portugal 0% after 365 days","UK £3,000 allowance","UAE 0%","Italy 33%","Belgium 10% above €10k","24 countries verified"].map(t=>`<span>${t}</span><span class="s">■</span>`).join("");$("tt").innerHTML=tk+tk;
+// chips
+$("chips").innerHTML=Object.entries(E.COUNTRY_NAMES).map(([c,n],i)=>`<button type="button" class="chip" data-c="${c}" aria-pressed="${i===0}">${esc(n)}<small>${c}</small></button>`).join("");
+const chips=[...document.querySelectorAll(".chip")];
+chips.forEach(b=>b.addEventListener("click",()=>{if($("nomad").checked)b.setAttribute("aria-pressed",String(b.getAttribute("aria-pressed")!=="true"));else chips.forEach(x=>x.setAttribute("aria-pressed",String(x===b)));if(!chips.some(x=>x.getAttribute("aria-pressed")==="true"))b.setAttribute("aria-pressed","true");}));
+$("nomad").addEventListener("change",e=>{if(e.target.checked)chips.forEach((x,i)=>x.setAttribute("aria-pressed",String(i<3||x.getAttribute("aria-pressed")==="true")));else chips.forEach((x,i)=>x.setAttribute("aria-pressed",String(i===0)));});
+const sel=()=>chips.filter(x=>x.getAttribute("aria-pressed")==="true").map(x=>x.dataset.c);
+// CZ case
+function rankHtml(rk){const best=rk.find(x=>x.verified);return rk.map((x,i)=>`<div class="cell ${x===best?"best":""}"><span class="k">[ ${String(i+1).padStart(2,"0")} / ${x.country} ]</span><div class="amt num">${fmt(x.taxDue,x.currency)}</div><p>${esc(x.countryName)}</p></div>`).join("");}
+$("czrank").innerHTML=rankHtml(CZ.ranking);
+$("czp").addEventListener("click",()=>{$("ws").value="0x28816c4C4792467390C90e5B426F198570E29307";$("nomad").checked=true;const pick=["FR","DE","GB","US","PT","AE","IT","JP","ES","CH"];chips.forEach(x=>x.setAttribute("aria-pressed",String(pick.includes(x.dataset.c))));});
+// form
+function reportHtml(r){const c=r.currency,t=r.totals,tips=[...r.tips].sort((a,b)=>b.saving-a.saving).slice(0,3);
+ return `<span class="tag">[ ${esc(r.countryName)} / ${esc(r.taxYear)} ]</span><div class="big num">${fmt(t.taxDue,c)}</div><p class="muted">tax due on ${fmt(t.netGain,c)} of gains${t.exempt?`, ${fmt(t.exempt,c)} exempt`:""}</p>
+ ${tips.length?`<div class="tips">${tips.map((x,i)=>`<div class="cell"><span class="k">[ TIP ${i+1} ]</span><b>${esc(x.title)}</b><p>${esc(x.detail)}</p><p class="save">${x.saving?"save "+fmt(x.saving,c):""}</p></div>`).join("")}</div>`:""}
+ <details><summary>Details · events · rules</summary><table><tr><th>Date</th><th>Asset</th><th class="r">Proceeds</th><th class="r">Gain</th></tr>${r.taxableEvents.map(e=>`<tr><td>${e.date}</td><td>${esc(e.asset)}</td><td class="r num">${fmt(e.proceeds,c)}</td><td class="r num">${fmt(e.gain,c)}</td></tr>`).join("")||'<tr><td colspan="4" class="muted">No taxable event</td></tr>'}</table><ul class="plain">${r.rulesApplied.concat(r.obligations).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></details>`;}
+$("f").addEventListener("submit",e=>{e.preventDefault();const w=$("ws").value.match(/0x[a-fA-F0-9]{40}/g)||[],cs=sel();const out=$("out");out.style.display="block";
+ if(w.length&&w[0].toLowerCase()==="0x28816c4c4792467390c90e5b426f198570e29307"){out.innerHTML=`<span class="tag">[ CZ / LIVE DATA / WHAT-IF ]</span><h2 style="font:700 clamp(28px,4vw,48px)/1 var(--mono);letter-spacing:-.04em;margin:12px 0 22px;text-transform:uppercase">Cheapest: <span style="color:var(--y)">${esc(CZ.ranking[0].countryName)}</span></h2><div class="rank">${rankHtml(CZ.ranking.filter(x=>cs.includes(x.country))||CZ.ranking)}</div><p class="note">Crypto gains are taxed where you are tax resident, not by passport. US citizens are taxed by the US wherever they live.</p>`;}
+ else{const input={...E.DEMO};const req=JSON.stringify(cs.length>1?{countries:cs,year:2026,wallets:w}:{country:cs[0],year:2026,wallets:w});
+  let body;if(cs.length>1){const cmp=E.compareResidencies(input,cs);body=`<span class="tag">[ NOMAD MODE / ${cs.length} COUNTRIES / EXAMPLE PORTFOLIO ]</span><div class="rank" style="margin-top:16px">${rankHtml(cmp.ranking)}</div>${cmp.notes.slice(0,2).map(n=>`<p class="note">${esc(n)}</p>`).join("")}<div style="margin-top:40px">${reportHtml(cmp.reports.find(r=>r.country===cmp.cheapest)||cmp.reports[0])}</div>`;}
+  else body=reportHtml(E.computeTax({...input,country:cs[0]}));
+  out.innerHTML=`<div class="cell" style="border:1px solid var(--line);margin-bottom:28px"><span class="k">[ REQUEST TO AGENT 2779 ]</span><pre>${esc(req)}</pre><p class="muted" style="margin-top:8px">${w.length?"The onchain agent analyses these wallets for $0.10 (ERC-8183 job).":"Add a wallet for your real report."} Below: an example portfolio.</p></div>`+body;}
+ out.scrollIntoView({behavior:reduce?"auto":"smooth"});});
+// hero + reveal
+requestAnimationFrame(()=>document.querySelector(".hero").classList.add("in"));
+const io="IntersectionObserver"in window?new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){e.target.classList.add("revealed");io.unobserve(e.target);}},{threshold:.12,rootMargin:"0px 0px -40px 0px"}):null;
+document.querySelectorAll("section .sh, section .cell, section .form, section .note").forEach(n=>{if(!io||reduce||n.getBoundingClientRect().top<innerHeight)return;n.style.setProperty("--rd",`${(Array.from(n.parentElement.children).indexOf(n)%4)*90}ms`);n.classList.add("reveal");io.observe(n);});
+</script>
+</body></html>
