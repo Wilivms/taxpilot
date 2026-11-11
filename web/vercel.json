@@ -1,1 +1,14 @@
-{ "functions": { "api/report.mjs": { "maxDuration": 60 } }, "outputDirectory": "public" }
+{
+  "functions": {
+    "api/report.mjs": { "maxDuration": 60 },
+    "api/copilot.mjs": { "maxDuration": 120 },
+    "api/mcp.mjs": { "maxDuration": 60 },
+    "api/guard.mjs": { "maxDuration": 10 },
+    "api/budget.mjs": { "maxDuration": 10 }
+  },
+  "rewrites": [
+    { "source": "/api/guard/validate", "destination": "/api/guard?op=validate" },
+    { "source": "/api/guard/profiles", "destination": "/api/guard?op=profiles" }
+  ],
+  "outputDirectory": "public"
+}
