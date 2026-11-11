@@ -164,12 +164,21 @@ export async function runCopilot(inp: CopilotInput, ctx: { selfUrl: string; guar
     const mcp = [{ name: "taxpilot", url: `${ctx.selfUrl}/api/mcp`, ...(ctx.mcpToken ? { authorization_token: ctx.mcpToken } : {}), purpose_hint: "TaxPilot deterministic tax engine: ledger, totals and rules", allowed_tools: ["get_disposal_ledger", "get_tax_rules"] }];
     const run = (model: string) => chat({ role: "math-auditor", model, user, maxTokens: 900, temperature: 0, ...(storedId ? { mcpServerIds: [storedId] } : { mcpServers: mcp }), tools: [{ type: "otari_code_execution" }], messages: [{ role: "user", content: prompt }], timeoutMs: 80_000 });
     try {
-      let res;
+      let res: Awaited<ReturnType<typeof run>>;
       try { res = await run(MODELS.auditor); } catch (e) { const er = e as OtariError; if ((er.status === 404 || er.status === 400) && DIRECT[MODELS.auditor]) res = await run(DIRECT[MODELS.auditor]); else throw e; }
+      const evs = [res.evidence];
+      // Models sometimes answer without running the sandbox: one corrective retry, so the audit is never "trust me".
+      if (!res.evidence.tools.some((t) => t.type === "code_execution")) {
+        try {
+          const again = await chat({ role: "math-auditor", model: MODELS.auditor, user, maxTokens: 900, temperature: 0, ...(storedId ? { mcpServerIds: [storedId] } : { mcpServers: mcp }), tools: [{ type: "otari_code_execution" }], messages: [{ role: "user", content: prompt }, { role: "assistant", content: res.text || "(no answer)" }, { role: "user", content: "You did not call the code execution tool. Call it now with the Python check, then reply with the JSON only." }], timeoutMs: 60_000 });
+          evs.push(again.evidence); res = again;
+        } catch { /* keep the first answer; the model-free replay still covers the math */ }
+      }
       out.model = parseJson(res.text) ?? { note: res.text.slice(0, 300) };
-      const mcpCalls = res.evidence.tools.filter((t) => t.type === "mcp").length, codeRuns = res.evidence.tools.filter((t) => t.type === "code_execution").length;
+      const allTools = evs.flatMap((e) => e.tools);
+      const mcpCalls = allTools.filter((t) => t.type === "mcp").length, codeRuns = allTools.filter((t) => t.type === "code_execution").length;
       const ok = out.model?.verdict === "match" && (!out.replay?.line_errors || !out.replay.line_errors.length);
-      push({ id: "audit", title: "Independent math audit", role: "taxpilot-auditor", status: "done", detail: `${ok ? "✓ Numbers match" : "⚠ Check needed"}: the auditor model pulled the ledger over MCP (${mcpCalls} call(s)), re-ran the math in Otari's sandbox (${codeRuns} run(s)), and a model-free sandbox replay ${out.replay?.line_errors?.length ? "found line errors" : "confirmed every line"}.`, evidence: [res.evidence], data: out });
+      push({ id: "audit", title: "Independent math audit", role: "taxpilot-auditor", status: "done", detail: `${ok ? "✓ Numbers match" : "⚠ Check needed"}: the auditor model pulled the ledger over MCP (${mcpCalls} call(s)), re-ran the math in Otari's sandbox (${codeRuns} run(s)${evs.length > 1 ? ", after one corrective retry" : ""}), and a model-free sandbox replay ${out.replay?.line_errors?.length ? "found line errors" : "confirmed every line"}.`, evidence: evs, data: out });
     } catch (e) {
       const er = e as OtariError;
       push({ id: "audit", title: "Independent math audit", role: "taxpilot-auditor", status: out.replay ? "done" : "failed", detail: `${er.code === "budget_exceeded" ? "Per-user budget reached: model audit skipped" : `Model audit unavailable (${er.message})`}. ${out.replay ? `Sandbox replay (no model): ${out.replay.lines} lines checked ${out.replay.line_errors?.length ? "✗" : "✓"}.` : ""}`, data: out });
