@@ -25,7 +25,7 @@ export interface Strategy {
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
 /** Current holdings with latent gain/loss from the engine's own cost data. */
-function latent(input: TaxInput) {
+export function latent(input: TaxInput) {
   const lots: Record<string, { qty: number; cost: number; date: string }[]> = {};
   for (const e of [...input.events].sort((a, b) => a.date.localeCompare(b.date))) {
     if (e.type === "buy") { (lots[e.asset] ??= []).push({ qty: e.qty, cost: e.eur, date: e.date }); continue; }
@@ -58,31 +58,31 @@ export function strategies(r: TaxReport, input: TaxInput): Strategy[] {
       const rows = [0, 0.11].map((tmi) => ({ tmi, tax: base * (tmi + F.social) }));
       const best = rows[0];
       out.push({
-        id: "fr-bareme", title: "Opter pour le barème progressif (case 3CN)",
-        why: "La flat tax de 31,4 % est optionnelle : avec une tranche marginale de 0 % ou 11 %, le barème remplace les 12,8 % d'impôt par votre TMI.",
-        steps: [`TMI 0 % → ${r2(rows[0].tax)} € au lieu de ${r2(tax)} €`, `TMI 11 % → ${r2(rows[1].tax)} € au lieu de ${r2(tax)} €`, "Cocher 3CN sur la 2042-C (option globale pour toutes vos plus-values crypto de l'année)"],
-        saving: r2(Math.max(0, tax - best.tax)), caveat: "Option annuelle et globale : à simuler sur impots.gouv.fr avant de cocher.", source: "Notice 2086 ; CGI art. 200 C",
+        id: "fr-bareme", title: "Opt for the progressive scale (box 3CN)",
+        why: "The 31.4% flat tax is optional: with a 0% or 11% marginal bracket, the progressive scale replaces the 12.8% income tax with your bracket.",
+        steps: [`0% bracket → €${r2(rows[0].tax)} instead of €${r2(tax)}`, `11% bracket → €${r2(rows[1].tax)} instead of €${r2(tax)}`, "Tick box 3CN on form 2042-C (applies to all your capital income of the year)"],
+        saving: r2(Math.max(0, tax - best.tax)), caveat: "Annual, all-or-nothing option: simulate it on impots.gouv.fr before ticking.", source: "Notice 2086 ; CGI art. 200 C",
       });
     }
     if (tax > 0) out.push({
-      id: "fr-stable", title: "Encaisser en stablecoins, pas en euros",
-      why: "Un échange crypto → crypto, stablecoins compris, est en sursis d'imposition : seule la conversion en euros (ou l'achat d'un bien) est une cession imposable.",
-      steps: ["Vendre vers USDT / USDC plutôt que vers l'euro", "Ne convertir en euros que le montant réellement nécessaire", "Lisser les conversions sur plusieurs années civiles"],
+      id: "fr-stable", title: "Cash out to stablecoins, not euros",
+      why: "A crypto → crypto swap, stablecoins included, is tax-deferred: only converting to euros (or buying goods) is a taxable disposal.",
+      steps: ["Sell into USDT / USDC rather than euros", "Only convert to euros the amount you really need", "Spread conversions over several calendar years"],
       saving: r2(tax), source: "CGI art. 150 VH bis, II-A",
     });
     if (gainLatent > 0 && value > 0) {
       const giftValue = Math.min(value, 100_000);
       const purged = gainLatent * (giftValue / value);
       out.push({
-        id: "fr-donation", title: "Donner avant de vendre (donation à un enfant)",
-        why: "Le donataire reprend les cryptos à leur valeur au jour de la donation : la plus-value latente est effacée, et l'abattement de 100 000 € par parent et par enfant (tous les 15 ans) évite les droits de donation.",
-        steps: [`Valeur donnée : ${r2(giftValue)} € (dans l'abattement)`, "Acte de donation (notaire ou don manuel déclaré) avec la valeur des cryptos au jour J", "C'est l'enfant qui vend ensuite : sa plus-value part de cette valeur"],
-        saving: r2(purged * F.flatTax), caveat: "Donation irrévocable : l'argent appartient au donataire. Ne pas la faire juste avant une vente déjà décidée par vous (abus de droit).", source: "CGI art. 150 VH bis III-B ; art. 779 I",
+        id: "fr-donation", title: "Gift before selling (donation to a child)",
+        why: "The recipient takes the crypto at its value on the gift date: the latent gain is wiped out, and the €100,000 allowance per parent per child (every 15 years) avoids gift duty.",
+        steps: [`Value gifted: €${r2(giftValue)} (within the allowance)`, "Gift deed (notary or declared manual gift) stating the crypto value on the day", "The child sells afterwards: their gain starts from that value"],
+        saving: r2(purged * F.flatTax), caveat: "Irrevocable: the money belongs to the child. Do not gift right before a sale you already decided yourself (abuse of law).", source: "CGI art. 150 VH bis III-B ; art. 779 I",
       });
     }
     if (r.totals.proceeds > 305 && r.totals.proceeds < 1000) out.push({
-      id: "fr-305", title: "Rester sous 305 € de cessions par an", why: "Si le total des prix de cession du foyer ne dépasse pas 305 € dans l'année, tout est exonéré.",
-      steps: [`Cessions ${r.taxYear} : ${r2(r.totals.proceeds)} €`, "Reporter une partie des ventes au 1er janvier"], saving: r2(tax), source: "CGI art. 150 VH bis, II-B",
+      id: "fr-305", title: "Stay under €305 of disposals per year", why: "If the household's total disposal proceeds stay at or below €305 in the year, everything is exempt.",
+      steps: [`Disposals ${r.taxYear}: €${r2(r.totals.proceeds)}`, "Push part of the sales to 1 January"], saving: r2(tax), source: "CGI art. 150 VH bis, II-B",
     });
   }
 
@@ -93,14 +93,14 @@ export function strategies(r: TaxReport, input: TaxInput): Strategy[] {
     const young = lots.filter((l) => (Date.parse(today) - Date.parse(l.date)) / 864e5 <= 365);
     const youngLoss = young.reduce((s, l) => s + Math.min(0, l.value - l.cost), 0);
     if (shortGain > 0 && youngLoss < 0) out.push({
-      id: "de-loss", title: "Verluste vor dem 31.12. realisieren",
-      why: "Verluste aus privaten Veräußerungsgeschäften (innerhalb eines Jahres) werden mit Gewinnen desselben Jahres verrechnet; ein Rückkauf danach ist erlaubt.",
-      steps: young.filter((l) => l.value < l.cost).map((l) => `${l.asset}: ${r2(l.value - l.cost)} € unrealisierter Verlust`), saving: r2(Math.min(-youngLoss, shortGain) * rate), source: "§ 23 Abs. 3 EStG",
+      id: "de-loss", title: "Realise losses before 31 December",
+      why: "Losses on private sales (held under a year) offset gains of the same year; buying back afterwards is allowed.",
+      steps: young.filter((l) => l.value < l.cost).map((l) => `${l.asset}: €${r2(l.value - l.cost)} unrealised loss`), saving: r2(Math.min(-youngLoss, shortGain) * rate), source: "§ 23 Abs. 3 EStG",
     });
     if (shortGain >= 1000 && shortGain < 2000) out.push({
-      id: "de-spouse", title: "Freigrenze zweimal nutzen (Ehepaar)",
-      why: "Die Freigrenze von 1.000 € gilt pro Person: bei gemeinsamen Konten wird der Gewinn je zur Hälfte zugerechnet.",
-      steps: ["Kryptowerte über ein gemeinsames Konto / Wallet beider Ehegatten halten", `Gewinn ${r2(shortGain)} € → je ${r2(shortGain / 2)} € unter der Freigrenze`], saving: r2(tax), caveat: "Nur bei echtem gemeinsamem Eigentum (z. B. Gemeinschaftskonto); keine Scheinübertragung.", source: "Freigrenze je Ehegatte (Lohnsteuer kompakt 2025); Anlage SO Z. 47",
+      id: "de-spouse", title: "Use the €1,000 threshold twice (married couple)",
+      why: "The €1,000 Freigrenze applies per person: on joint accounts the gain is split half and half.",
+      steps: ["Hold the crypto in a joint account / wallet of both spouses", `Gain €${r2(shortGain)} → €${r2(shortGain / 2)} each, under the threshold`], saving: r2(tax), caveat: "Only with genuine joint ownership (e.g. joint account); no sham transfers.", source: "Freigrenze je Ehegatte (Lohnsteuer kompakt 2025); Anlage SO Z. 47",
     });
   }
 

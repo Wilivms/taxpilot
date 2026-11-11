@@ -41,26 +41,26 @@ function franceForms(r: TaxReport, foreignPlatforms: string[]): TaxForm[] {
   const forms: TaxForm[] = [];
   forms.push({
     id: "FR-2086",
-    title: "Formulaire 2086 — plus ou moins-values de cessions d'actifs numériques",
+    title: "Form 2086 — gains and losses on digital asset disposals",
     url: "https://www.impots.gouv.fr/formulaire/2086/declaration-des-plus-ou-moins-values-realisees-sur-actifs-numeriques",
     table: {
-      columns: ["Ligne", ...ls.map((_, i) => `Cession ${i + 1}`)],
+      columns: ["Line", ...ls.map((_, i) => `Disposal ${i + 1}`)],
       rows: [
-        ["211 Date de la cession", ...ls.map((l) => l.fr!.l211)],
-        ["212 Valeur globale du portefeuille", ...ls.map((l) => l.fr!.l212)],
-        ["213 Prix de cession", ...ls.map((l) => l.fr!.l213)],
-        ["214 Frais de cession", ...ls.map((l) => l.fr!.l214)],
-        ["216 Soulte reçue ou versée", ...ls.map((l) => l.fr!.l216)],
-        ["217 Prix de cession net des soultes", ...ls.map((l) => l.fr!.l217)],
-        ["218 Prix de cession net des frais et soultes", ...ls.map((l) => l.fr!.l218)],
-        ["220 Prix total d'acquisition", ...ls.map((l) => l.fr!.l220)],
-        ["221 Fractions de capital initial", ...ls.map((l) => l.fr!.l221)],
-        ["222 Soultes reçues antérieurement", ...ls.map((l) => l.fr!.l222)],
-        ["223 Prix total d'acquisition net (220 − 221 − 222)", ...ls.map((l) => l.fr!.l223)],
-        ["224 Plus ou moins-value = 218 − [223 × 217 / 212]", ...ls.map((l) => l.fr!.l224)],
+        ["211 Date of disposal", ...ls.map((l) => l.fr!.l211)],
+        ["212 Total portfolio value", ...ls.map((l) => l.fr!.l212)],
+        ["213 Disposal price", ...ls.map((l) => l.fr!.l213)],
+        ["214 Disposal fees", ...ls.map((l) => l.fr!.l214)],
+        ["216 Balancing cash received or paid", ...ls.map((l) => l.fr!.l216)],
+        ["217 Price net of balancing cash", ...ls.map((l) => l.fr!.l217)],
+        ["218 Price net of fees and balancing cash", ...ls.map((l) => l.fr!.l218)],
+        ["220 Total acquisition cost", ...ls.map((l) => l.fr!.l220)],
+        ["221 Initial capital already used", ...ls.map((l) => l.fr!.l221)],
+        ["222 Balancing cash received earlier", ...ls.map((l) => l.fr!.l222)],
+        ["223 Net acquisition cost (220 − 221 − 222)", ...ls.map((l) => l.fr!.l223)],
+        ["224 Gain or loss = 218 − [223 × 217 / 212]", ...ls.map((l) => l.fr!.l224)],
       ],
     },
-    fields: [{ code: "52", label: "Total des plus et moins-values du foyer", value: total }],
+    fields: [{ code: "52", label: "Household total of gains and losses", value: total }],
     notes: [
       "Five cessions per column block on the paper form: continue on a new page beyond five (over 200 cessions online: attach the detail as a file).",
       "Fees (214) are set to 0: add your exchange fees if you have the receipts, they reduce the gain.",
@@ -69,18 +69,18 @@ function franceForms(r: TaxReport, foreignPlatforms: string[]): TaxForm[] {
   });
   forms.push({
     id: "FR-2042C",
-    title: "Déclaration 2042-C (report du résultat)",
+    title: "Form 2042-C (carry the result)",
     fields: [
-      { code: "3AN", label: "Plus-value nette (si positive)", value: total > 0 && !exempt ? total : 0 },
-      { code: "3BN", label: "Moins-value nette (si négative)", value: total < 0 ? -total : 0 },
-      { code: "3CN", label: "Option pour le barème progressif (à cocher si plus favorable)", value: "voir stratégie « barème »" },
+      { code: "3AN", label: "Net gain (if positive)", value: total > 0 && !exempt ? total : 0 },
+      { code: "3BN", label: "Net loss (if negative)", value: total < 0 ? -total : 0 },
+      { code: "3CN", label: "Progressive-scale option (tick if cheaper)", value: "see the strategies tab" },
     ],
   });
   forms.push({
     id: "FR-3916bis",
-    title: "Formulaire 3916-bis — comptes d'actifs numériques à l'étranger (+ case 8UU de la 2042)",
+    title: "Form 3916-bis — digital-asset accounts abroad (+ box 8UU of form 2042)",
     url: "https://www.impots.gouv.fr/formulaire/3916-3916-bis/declaration-par-un-resident-dun-compte-ouvert-hors-de-france",
-    table: { columns: ["Plateforme / compte", "À déclarer"], rows: foreignPlatforms.length ? foreignPlatforms.map((p) => [p, "oui, même sans cession"]) : [["Aucune plateforme étrangère détectée dans ces wallets", "—"]] },
+    table: { columns: ["Exchange / account", "To declare"], rows: foreignPlatforms.length ? foreignPlatforms.map((p) => [p, "yes, even without any sale"]) : [["No foreign exchange entered", "—"]] },
     notes: ["A self-custody wallet (MetaMask, Ledger) is not a foreign account; exchange accounts outside France are."],
   });
   return forms;
@@ -91,16 +91,16 @@ function germanyForms(r: TaxReport): TaxForm[] {
   const gain = sum(short.map((l) => l.gain));
   return [{
     id: "DE-AnlageSO",
-    title: "Anlage SO — private Veräußerungsgeschäfte, Kryptowerte (§ 23 EStG)",
+    title: "Anlage SO — private sales of crypto assets (§ 23 EStG)",
     url: "https://www.elster.de",
     fields: [
-      { code: "Z. 47", label: "Zeitraum (Anschaffung / Veräußerung)", value: short.length ? `${dmy(short.map((l) => l.acquired!).sort()[0])} – ${dmy(short.map((l) => l.date).sort().slice(-1)[0])}` : "—" },
-      { code: "Z. 48", label: "Veräußerungspreis", value: sum(short.map((l) => l.proceeds)) },
-      { code: "Z. 49", label: "Anschaffungskosten", value: sum(short.map((l) => l.cost)) },
-      { code: "Z. 50", label: "Werbungskosten (Gebühren)", value: 0 },
-      { code: "Z. 51", label: "Gewinn / Verlust", value: gain },
+      { code: "Z. 47", label: "Period (acquired / sold)", value: short.length ? `${dmy(short.map((l) => l.acquired!).sort()[0])} – ${dmy(short.map((l) => l.date).sort().slice(-1)[0])}` : "—" },
+      { code: "Z. 48", label: "Sale proceeds", value: sum(short.map((l) => l.proceeds)) },
+      { code: "Z. 49", label: "Acquisition cost", value: sum(short.map((l) => l.cost)) },
+      { code: "Z. 50", label: "Expenses (fees)", value: 0 },
+      { code: "Z. 51", label: "Gain / loss", value: gain },
     ],
-    table: { columns: ["Veräußert", "Kryptowert", "Menge", "Angeschafft", "Erlös €", "Kosten €", "Gewinn €"], rows: short.map((l) => [dmy(l.date), l.asset, r2(l.qty), dmy(l.acquired!), l.proceeds, l.cost, l.gain]) },
+    table: { columns: ["Sold", "Asset", "Quantity", "Acquired", "Proceeds €", "Cost €", "Gain €"], rows: short.map((l) => [dmy(l.date), l.asset, r2(l.qty), dmy(l.acquired!), l.proceeds, l.cost, l.gain]) },
     notes: [
       "Only disposals within the one-year holding period go here; lots held over a year are tax-free and not entered.",
       gain < 1000 && gain > 0 ? "Total below the €1,000 Freigrenze: tax-free, but declaring it is still recommended." : "Losses: enter them (negative) so the Finanzamt records them for future years.",
@@ -144,6 +144,6 @@ export function buildForms(r: TaxReport, foreignPlatforms: string[] = []): FormP
     : r.country === "GB" ? ukForms(r)
     : r.country === "US" ? usForms(r)
     : [{ id: `${r.country}-ledger`, title: `${r.countryName}: disposal ledger to transcribe into your national return`, table: { columns: ["Date", "Asset", "Quantity", "Acquired", "Term", "Proceeds", "Cost", "Gain"], rows: r.lines.map((l) => [l.date, l.asset, r2(l.qty), l.acquired ?? "", l.term ?? "", l.proceeds, l.cost, l.gain]) }, notes: ["Line-by-line form mapping is available for France, Germany, the UK and the US; for this country TaxPilot gives the computed ledger."] }];
-  const deadline = r.country === "FR" ? "Déclaration en ligne : mai–juin de l'année suivante" : r.country === "DE" ? "31 July of the following year (without adviser)" : r.country === "GB" ? "31 January after the tax year (online)" : r.country === "US" ? "15 April of the following year" : undefined;
+  const deadline = r.country === "FR" ? "Online return: May–June of the following year" : r.country === "DE" ? "31 July of the following year (without adviser)" : r.country === "GB" ? "31 January after the tax year (online)" : r.country === "US" ? "15 April of the following year" : undefined;
   return { country: r.country, currency: r.currency, forms, csv: ledgerCsv(r.lines, r.currency), deadline };
 }

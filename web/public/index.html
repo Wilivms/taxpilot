@@ -119,6 +119,12 @@ footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);f
 .strat .cell b.t{display:block;font:700 18px var(--mono);margin:14px 0 6px}
 .strat ol{margin:10px 0 0;padding-left:20px;color:var(--ink2);font-size:13px}
 .strat .cav{color:var(--bad);font-size:12px;margin-top:8px}.strat .src{color:var(--muted);font-size:11px;margin-top:8px}
+.hl{border:1px solid var(--y);background:color-mix(in srgb,var(--y) 10%,var(--card));padding:22px 24px;margin-bottom:30px}.hl b{display:block;font:700 clamp(34px,5vw,56px)/1 var(--mono);color:var(--good);letter-spacing:-.04em;margin:10px 0 6px}.hl p{margin:0;color:var(--ink)}
+.h3{font:700 22px var(--mono);margin:36px 0 14px;text-transform:uppercase}.h3 small{text-transform:none;font-size:12px;font-weight:400}
+button.cell{all:unset;box-sizing:border-box;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card);padding:20px;cursor:pointer;position:relative}
+.rank .cell.on{outline:2px solid var(--y);outline-offset:-2px}.rank .tip{font-size:11px;margin-top:6px;opacity:.8}
+.bars{margin-top:18px;display:grid;gap:8px}.br{display:grid;grid-template-columns:160px 1fr 120px;gap:12px;align-items:center;font-size:12.5px}.br i{display:block;height:14px;width:var(--w);background:var(--y);transition:width .3s var(--ease)}.br b{text-align:right}
+@media print{body::before,.bar,.hero,.ticker,#how,#proof,footer,.form,.no-print,#load{display:none!important}body{background:#fff;color:#000}section{padding:0}.panel{border:0;padding:0;background:#fff}.panel[hidden]{display:block!important}.cell,.fields div,.rank .cell,.hl{background:#fff!important;color:#000!important}.big,.hl b,.fields .code{color:#000!important}#out{display:block!important}}
 .inp{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);font:13px var(--mono);padding:10px}
 </style>
 </head>
@@ -145,7 +151,7 @@ footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);f
   <form class="form" id="f">
     <div>
       <label class="l" for="ws">1 · BSC wallets (up to 3)</label>
-      <textarea id="ws" placeholder="0x…" required></textarea>
+      <textarea id="ws" placeholder="0x… (one per line)" required></textarea><span class="muted" id="wc"></span>
       <label class="l" for="pf" style="margin-top:18px">Exchange accounts abroad (optional, for France's 3916-bis)</label>
       <input class="inp" id="pf" placeholder="Binance, Coinbase…">
       <details style="margin-top:16px;border:0;padding:0"><summary>Coins bought more than a year ago? Declare their cost</summary>
@@ -167,7 +173,7 @@ footer{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--muted);f
     <div class="cell hov"><span class="k">[ 01 / READ ]</span><h3>Your wallets</h3><p>Real BSC transfers, official token contracts only, priced in euros on the day of each move.</p></div>
     <div class="cell hov"><span class="k">[ 02 / APPLY ]</span><h3>The law</h3><p>One versioned rule set per country: rates, holding periods, allowances, crypto-to-crypto rules.</p></div>
     <div class="cell hov"><span class="k">[ 03 / FILL ]</span><h3>The forms</h3><p>France 2086 + 2042-C + 3916-bis, Germany Anlage SO, UK SA108, US Form 8949, line by line.</p></div>
-    <div class="cell hov"><span class="k">[ 04 / OPTIMISE ]</span><h3>The bill</h3><p>Legal strategies computed on your numbers: timing, options, donations, losses, residence.</p></div>
+    <div class="cell hov"><span class="k">[ 04 / OPTIMISE ]</span><h3>The bill</h3><p>Legal strategies computed on your numbers, a sell simulator and a tax-free calendar you can add to your phone.</p></div>
   </div>
 </div></section>
 
@@ -189,7 +195,7 @@ const esc=(s)=>String(s).replace(/[&<>"]/g,(m)=>({"&":"&amp;","<":"&lt;",">":"&g
 const money=(n,c)=>typeof n==="number"?(n<0?"−":"")+(c==="GBP"?"£":"€")+Math.abs(n).toLocaleString("en-US",{maximumFractionDigits:2}):esc(n);
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 $("px").innerHTML=Array.from({length:72},(_,i)=>`<i style="--d:${((i*37)%29)/10}s"></i>`).join("");
-const tk=["France 2086 filled line by line","Germany Anlage SO","UK SA108 boxes 13.1–13.5","US Form 8949 boxes I / L","24 countries verified","Residence, not passport, decides"].map(t=>`<span>${t}</span><span class="s">■</span>`).join("");$("tt").innerHTML=tk+tk;
+const tk=["France 2086 filled line by line","Germany Anlage SO","UK SA108 boxes 13.1–13.5","US Form 8949 boxes I / L","24 countries verified","Sell simulator before you sell","Tax-free dates to your calendar","Residence, not passport, decides"].map(t=>`<span>${t}</span><span class="s">■</span>`).join("");$("tt").innerHTML=tk+tk;
 $("chips").innerHTML=Object.entries(NAMES).map(([c,n],i)=>`<button type="button" class="chip" data-c="${c}" aria-pressed="${i===0}">${esc(n)}<small>${c}</small></button>`).join("");
 const chips=[...document.querySelectorAll(".chip")];
 chips.forEach(b=>b.addEventListener("click",()=>{if($("nomad").checked)b.setAttribute("aria-pressed",String(b.getAttribute("aria-pressed")!=="true"));else chips.forEach(x=>x.setAttribute("aria-pressed",String(x===b)));if(!chips.some(x=>x.getAttribute("aria-pressed")==="true"))b.setAttribute("aria-pressed","true");}));
@@ -204,33 +210,54 @@ function formHtml(f,cur){
   if(f.notes)h+=`<ul class="plain">${f.notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`;
   return h+"</div>";
 }
-function render(d){
-  const r=d.report,cur=r.currency,t=r.totals;
-  let h=`<span class="tag">[ ${esc(r.countryName)} / ${esc(r.taxYear)} / ${r.verified?"VERIFIED RULES":"UNVERIFIED"} ]</span><div class="big num">${money(t.taxDue,cur)}</div><p class="muted">tax due · net gain ${money(t.netGain,cur)} · exempt ${money(t.exempt,cur)} · ${r.lines.length} disposal line(s)</p>`;
+let D=null,CUR="FR";
+function money0(n){return (n<0?"−":"")+"€"+Math.abs(n).toLocaleString("en-US",{maximumFractionDigits:0});}
+function icsDate(d){return d.replace(/-/g,"");}
+function ics(events){const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//TaxPilot//EN"];events.forEach((e,i)=>{L.push("BEGIN:VEVENT",`UID:taxpilot-${i}-${icsDate(e.date)}@taxpilot`,`DTSTAMP:${icsDate(new Date().toISOString().slice(0,10))}T000000Z`,`DTSTART;VALUE=DATE:${icsDate(e.date)}`,`SUMMARY:${e.title.replace(/[,;]/g," ")}`,`DESCRIPTION:${(e.desc||"").replace(/[,;\n]/g," ")}`,"BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:TaxPilot reminder","END:VALARM","END:VEVENT");});L.push("END:VCALENDAR");return L.join("\r\n");}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();}
+function render(d){D=d;CUR=d.report.country;draw();$("out").style.display="block";$("out").scrollIntoView({behavior:reduce?"auto":"smooth"});}
+function draw(){
+  const d=D,p=d.byCountry[CUR]||{report:d.report,forms:d.forms,strategies:d.strategies},r=p.report,cur=r.currency,t=r.totals;
+  let h="";
+  if(d.headline&&d.headline.kind!=="none"&&CUR===d.report.country)h+=`<div class="hl"><span class="k">[ BIGGEST LEGAL SAVING ]</span><b class="num">${money0(d.headline.savingEur)}</b><p>${esc(d.headline.text)}</p></div>`;
+  h+=`<span class="tag">[ ${esc(r.countryName)} / ${esc(r.taxYear)} / RULES ${esc(r.rulesVersion)} ]</span><div class="big num">${money(t.taxDue,cur)}</div><p class="muted">tax due · net gain ${money(t.netGain,cur)} · exempt ${money(t.exempt,cur)} · ${r.lines.length} disposal line(s) · effective rate ${Math.round(t.effectiveRate*100)}%</p>`;
   if(d.warnings&&d.warnings.length)h+=d.warnings.map(w=>`<p class="note">${esc(w)}</p>`).join("");
-  if(d.comparison){const best=d.comparison.ranking.find(x=>x.verified);h+=`<h3 style="font:700 22px var(--mono);margin:36px 0 14px;text-transform:uppercase">Cheapest legal residence: <span style="color:var(--y)">${esc(best?best.countryName:"—")}</span></h3><div class="rank">${d.comparison.ranking.map((x,i)=>`<div class="cell ${x===best?"best":""}"><span class="k">[ ${String(i+1).padStart(2,"0")} / ${x.country} ]</span><div class="amt num">${money(x.taxDue,x.currency)}</div><p>${esc(x.countryName)}</p></div>`).join("")}</div>${d.comparison.notes.slice(0,2).map(n=>`<p class="note">${esc(n)}</p>`).join("")}`;}
-  h+=`<div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="true" data-p="pf">Tax forms</button><button class="tab" role="tab" aria-selected="false" data-p="ps">Strategies (${d.strategies.length})</button><button class="tab" role="tab" aria-selected="false" data-p="pl">Ledger CSV</button></div>`;
-  h+=`<div class="panel" id="pf">${d.forms.deadline?`<p class="muted">Deadline: ${esc(d.forms.deadline)}</p>`:""}${d.forms.forms.map(f=>formHtml(f,cur)).join("")}</div>`;
-  h+=`<div class="panel" id="ps" hidden><div class="strat">${d.strategies.length?d.strategies.map((s,i)=>`<div class="cell"><span class="k">[ STRATEGY ${i+1} ]</span><b class="t">${esc(s.title)}</b><p>${esc(s.why)}</p><ol>${s.steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol><p class="save">${s.saving?"≈ "+money(s.saving,cur)+" saved":""}</p>${s.caveat?`<p class="cav">⚠ ${esc(s.caveat)}</p>`:""}<p class="src">Source: ${esc(s.source)}</p></div>`).join(""):'<div class="cell"><p>No strategy applies to this portfolio this year.</p></div>'}</div></div>`;
-  h+=`<div class="panel" id="pl" hidden><p class="muted">Every disposal, ready to attach to your return or import in a spreadsheet.</p><div class="row"><button class="btn sm" type="button" id="dl">Download CSV</button></div><pre>${esc(d.forms.csv.split("\n").slice(0,30).join("\n"))}</pre></div>`;
+  if(d.comparison){const best=d.comparison.ranking.find(x=>x.verified);h+=`<h3 class="h3">Cheapest legal residence: <span style="color:var(--y)">${esc(best?best.countryName:"—")}</span> <small class="muted">· click a country to open its forms</small></h3><div class="rank">${d.comparison.ranking.map((x,i)=>`<button type="button" class="cell rk ${x===best?"best":""} ${x.country===CUR?"on":""}" data-c="${x.country}"><span class="k">[ ${String(i+1).padStart(2,"0")} / ${x.country} ]</span><div class="amt num">${money(x.taxDue,x.currency)}</div><p>${esc(x.countryName)}</p>${x.bestTip?`<p class="tip">${esc(x.bestTip)}</p>`:""}</button>`).join("")}</div>${d.comparison.notes.slice(0,2).map(n=>`<p class="note">${esc(n)}</p>`).join("")}`;}
+  const tabs=[["tf","Tax forms"],["ps",`Strategies (${p.strategies.length})`],["pv","Sell simulator"],["pc",`Tax-free calendar (${d.taxFreeDates.length})`],["pl","Ledger CSV"]];
+  h+=`<div class="tabs no-print" role="tablist">${tabs.map(([id,n],i)=>`<button class="tab" role="tab" aria-selected="${i===0}" data-p="${id}">${n}</button>`).join("")}<span style="flex:1"></span><button class="tab" type="button" id="pdf">Save PDF</button><button class="tab" type="button" id="share">Copy link</button></div>`;
+  h+=`<div class="panel" id="tf">${p.forms.deadline?`<p class="muted">Filing deadline: ${esc(p.forms.deadline)}</p>`:""}${p.forms.forms.map(f=>formHtml(f,cur)).join("")}<details><summary>How this was computed</summary><ul class="plain">${r.rulesApplied.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></details></div>`;
+  h+=`<div class="panel" id="ps" hidden><div class="strat">${p.strategies.length?p.strategies.map((s,i)=>`<div class="cell"><span class="k">[ STRATEGY ${i+1} ]</span><b class="t">${esc(s.title)}</b><p>${esc(s.why)}</p><ol>${s.steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol><p class="save">${s.saving?"≈ "+money(s.saving,cur)+" saved":""}</p>${s.caveat?`<p class="cav">⚠ ${esc(s.caveat)}</p>`:""}<p class="src">Source: ${esc(s.source)}</p></div>`).join(""):'<div class="cell"><p>No strategy applies to this portfolio this year.</p></div>'}${r.tips&&r.tips.filter(x=>x.saving>=1).length?`<div class="cell"><span class="k">[ QUICK WINS ]</span><ul class="plain">${r.tips.filter(x=>x.saving>=1).slice(0,6).map(x=>`<li><b>${esc(x.title)}</b> — ${esc(x.detail)}</li>`).join("")}</ul></div>`:""}</div></div>`;
+  const sim=d.sellToday||[];
+  h+=`<div class="panel" id="pv" hidden>${sim.length?`<p class="muted">Before you sell: what selling part of what you hold <b>today</b> would add to your bill, country by country.</p><div class="row"><input type="range" id="sl" min="0" max="${sim.length-1}" step="1" value="${sim.length-1}" style="flex:1;accent-color:var(--y)"><b id="slv" class="num" style="min-width:210px"></b></div><div id="simbars" class="bars"></div>`:'<p class="muted">No priced holding left in these wallets.</p>'}</div>`;
+  const dates=d.taxFreeDates||[];
+  h+=`<div class="panel" id="pc" hidden>${dates.length?`<p class="muted">Dates when your current coins become tax-free (or cheaper). Add them to your calendar so you never sell one day too early.</p><div class="row"><button class="btn sm" type="button" id="icsb">Add to my calendar (.ics)</button></div><div class="scroll"><table><tr><th>Date</th><th>Country</th><th>Coin</th><th class="r">Qty</th><th>Bought</th><th class="r">Latent gain</th></tr>${dates.map(x=>`<tr><td>${x.date}</td><td>${x.country}</td><td>${esc(x.asset)}</td><td class="r num">${x.qty}</td><td>${x.acquired}</td><td class="r num">${money(x.gainEur,"EUR")}</td></tr>`).join("")}</table></div>`:`<p class="muted">No upcoming tax-free date for the coins you hold in these countries.</p>${p.forms.deadline?`<div class="row"><button class="btn sm" type="button" id="icsb">Add the filing deadline to my calendar</button></div>`:""}`}</div>`;
+  h+=`<div class="panel" id="pl" hidden><p class="muted">Every disposal, ready to attach to your return or import in a spreadsheet.</p><div class="row"><button class="btn sm" type="button" id="dl">Download CSV</button></div><pre>${esc(p.forms.csv.split("\n").slice(0,30).join("\n"))}</pre></div>`;
   h+=`<p class="muted" style="margin-top:18px">${esc(r.disclaimer)}</p>`;
-  $("out").innerHTML=h;$("out").style.display="block";
-  $("out").querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{$("out").querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",String(x===b)));["pf","ps","pl"].forEach(p=>$(p).hidden=p!==b.dataset.p);}));
-  $("dl").addEventListener("click",()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([d.forms.csv],{type:"text/csv"}));a.download=`taxpilot-${r.country}-${r.taxYear.slice(0,4)}.csv`;a.click();});
-  $("out").scrollIntoView({behavior:reduce?"auto":"smooth"});
+  $("out").innerHTML=h;
+  const O=$("out");
+  O.querySelectorAll(".tab[data-p]").forEach(b=>b.addEventListener("click",()=>{O.querySelectorAll(".tab[data-p]").forEach(x=>x.setAttribute("aria-selected",String(x===b)));["tf","ps","pv","pc","pl"].forEach(q=>$(q).hidden=q!==b.dataset.p);}));
+  O.querySelectorAll(".rk").forEach(b=>b.addEventListener("click",()=>{if(d.byCountry[b.dataset.c]){CUR=b.dataset.c;draw();}}));
+  $("dl").addEventListener("click",()=>download(`taxpilot-${r.country}-${r.taxYear.slice(0,4)}.csv`,p.forms.csv,"text/csv"));
+  $("pdf").addEventListener("click",()=>{O.querySelectorAll(".panel").forEach(x=>x.hidden=false);print();});
+  $("share").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(location.href);$("share").textContent="Link copied ✓";}catch{$("share").textContent="Copy the address bar";}});
+  if(sim.length){const draw2=()=>{const s=sim[+$("sl").value],mx=Math.max(1,...Object.values(s.byCountry));$("slv").textContent=`Sell ${s.pct}% · ${money0(s.valueEur)}`;$("simbars").innerHTML=Object.entries(s.byCountry).sort((a,b)=>a[1]-b[1]).map(([c,v])=>`<div class="br"><span>${esc(NAMES[c]||c)}</span><i style="--w:${Math.max(1,v/mx*100)}%"></i><b class="num">+${money0(v)}</b></div>`).join("");};$("sl").addEventListener("input",draw2);draw2();}
+  const ib=$("icsb");if(ib)ib.addEventListener("click",()=>{const ev=dates.map(x=>({date:x.date,title:`TaxPilot: ${x.label}`,desc:`${x.qty} ${x.asset} bought ${x.acquired}; latent gain €${x.gainEur}. Selling from this date avoids the short-term rate.`}));const y=Number(r.taxYear)+1;const dl={FR:`${y}-05-20`,DE:`${y}-07-31`,GB:`${y}-01-31`,US:`${y}-04-15`}[r.country];if(dl)ev.push({date:dl,title:`TaxPilot: file your ${r.countryName} crypto tax return`,desc:p.forms.deadline||""});download("taxpilot-dates.ics",ics(ev),"text/calendar");});
 }
+function syncHash(wallets,countries,obp,obd){const q=new URLSearchParams({w:wallets.join(","),c:countries.join(",")});if(obp!==undefined&&isFinite(obp))q.set("bp",String(obp)),q.set("bd",obd);history.replaceState(null,"","#"+q.toString());}
 $("f").addEventListener("submit",async e=>{
   e.preventDefault();$("err").style.display="none";$("out").style.display="none";
-  const wallets=$("ws").value.match(/0x[a-fA-F0-9]{40}/g)||[];
+  const wallets=[...new Set($("ws").value.match(/0x[a-fA-F0-9]{40}/g)||[])].slice(0,3);
   if(!wallets.length){$("err").textContent="Paste at least one BSC wallet address (0x…).";$("err").style.display="block";return;}
   const countries=sel(),platforms=$("pf").value.split(",").map(s=>s.trim()).filter(Boolean);const obp=parseFloat(($("obp").value||"").replace(",","."));const olderBasis=isFinite(obp)&&obp>=0&&$("obd").value?{costPerUnitEur:obp,acquiredOn:$("obd").value}:undefined;
-  $("load").style.display="block";$("go").disabled=true;
-  const msgs=["Reading your wallets on BNB Chain…","Pricing every transfer in euros…","Applying each country's 2026 rules…","Filling the official forms…","Computing legal strategies…"];let k=0;const iv=setInterval(()=>{k=Math.min(k+1,msgs.length-1);$("lmsg").textContent=msgs[k];},4500);
+  syncHash(wallets,countries,olderBasis?olderBasis.costPerUnitEur:undefined,olderBasis?olderBasis.acquiredOn:"");$("load").style.display="block";$("go").disabled=true;
+  const msgs=["Reading your wallets on BNB Chain…","Pricing every transfer in euros…","Applying each country's 2026 rules…","Filling the official forms…","Simulating sales and tax-free dates…","Computing legal strategies…"];let k=0;const iv=setInterval(()=>{k=Math.min(k+1,msgs.length-1);$("lmsg").textContent=msgs[k];},4000);
   try{const res=await fetch("/api/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({wallets,countries,year:2026,platforms,olderBasis})});const d=await res.json();if(!res.ok)throw new Error(d.error||res.statusText);render(d);}
   catch(x){$("err").textContent="Could not build the report: "+x.message;$("err").style.display="block";}
   finally{clearInterval(iv);$("load").style.display="none";$("go").disabled=false;}
 });
 requestAnimationFrame(()=>document.querySelector(".hero").classList.add("in"));
+$("ws").addEventListener("input",()=>{const n=($("ws").value.match(/0x[a-fA-F0-9]{40}/g)||[]).length;$("wc").textContent=n?`${Math.min(n,3)} valid wallet${n>1?"s":""}${n>3?" (first 3 used)":""}`:"";});
+(()=>{const q=new URLSearchParams(location.hash.slice(1));if(!q.get("w"))return;$("ws").value=q.get("w").split(",").join("\n");$("ws").dispatchEvent(new Event("input"));const cs=(q.get("c")||"").split(",").filter(c=>NAMES[c]);if(cs.length>1)$("nomad").checked=true;if(cs.length)chips.forEach(x=>x.setAttribute("aria-pressed",String(cs.includes(x.dataset.c))));if(q.get("bp")){$("obp").value=q.get("bp");$("obd").value=q.get("bd")||"2021-01-01";}$("f").requestSubmit();})();
 const io="IntersectionObserver"in window?new IntersectionObserver(es=>{for(const e of es)if(e.isIntersecting){e.target.classList.add("revealed");io.unobserve(e.target);}},{threshold:.12,rootMargin:"0px 0px -40px 0px"}):null;
 document.querySelectorAll("section .sh, section .cell, section .form").forEach(n=>{if(!io||reduce||n.getBoundingClientRect().top<innerHeight)return;n.style.setProperty("--rd",`${(Array.from(n.parentElement.children).indexOf(n)%4)*90}ms`);n.classList.add("reveal");io.observe(n);});
 </script>

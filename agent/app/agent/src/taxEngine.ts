@@ -79,7 +79,7 @@ export interface TaxReport {
 export const RULES = {
   FR: {
     name: "France",
-    version: "FR-2026.1 (vérifié le 10/11/2026)",
+    version: "FR-2026.1 (verified 10/11/2026)",
     flatTax: 0.314, // 12.8% IR + 18.6% prélèvements sociaux (LFSS 2026)
     ir: 0.128,
     social: 0.186,
@@ -106,7 +106,7 @@ export const SUPPORTED = ["FR", "DE", "GB", "AE", "SG", "HK", "MY", "CH", "GE", 
 export const COUNTRY_NAMES: Record<string, string> = { FR: "France", DE: "Germany", GB: "United Kingdom", AE: "United Arab Emirates", SG: "Singapore", HK: "Hong Kong", MY: "Malaysia", CH: "Switzerland", GE: "Georgia", PT: "Portugal", IT: "Italy", BE: "Belgium", AT: "Austria", IE: "Ireland", ES: "Spain", NL: "Netherlands", CY: "Cyprus", PL: "Poland", US: "United States", CA: "Canada", AU: "Australia", JP: "Japan", IN: "India", KR: "South Korea" };
 
 const DISCLAIMER =
-  "Estimation automatique à partir des données onchain, pas un conseil fiscal. Vérifie avec un professionnel avant de déclarer.";
+  "Automatic estimate from onchain data, not tax advice. Check with a professional before filing.";
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 const days = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000);
@@ -182,12 +182,12 @@ function computeFR(input: TaxInput): TaxReport {
   const fiatSales = taxable.length;
   if (fiatSales > 0 && tax > 0)
     tips.push({
-      title: "Rester en stablecoins au lieu de repasser en euros",
-      detail: `Tes ${fiatSales} ventes en euros ont déclenché l'impôt. Un échange crypto → stablecoin (USDT, USDC) n'est pas imposable en France : ne convertis en euros que ce dont tu as réellement besoin.`,
+      title: "Stay in stablecoins instead of cashing out to euros",
+      detail: `Your ${fiatSales} sale(s) to euros triggered the tax. A crypto → stablecoin swap (USDT, USDC) is not taxable in France: only convert to euros what you actually need.`,
       saving: r2(tax),
     });
   if (!exemptAll && proceedsYear < 2 * R.exemptDisposalsEur)
-    tips.push({ title: "Seuil de 305 € de cessions", detail: `Tes cessions totales (${r2(proceedsYear)} €) dépassent à peine 305 €. En étalant sur deux années civiles, tu restes exonéré.`, saving: r2(tax) });
+    tips.push({ title: "€305 disposal threshold", detail: `Your total disposals (€${r2(proceedsYear)}) barely exceed €305. Spreading them over two calendar years keeps you exempt.`, saving: r2(tax) });
   // Option barème si TMI faible
   const tmiCases = [0, 0.11];
   if (base > 0) {
@@ -195,7 +195,7 @@ function computeFR(input: TaxInput): TaxReport {
     const best = tmi !== undefined ? tmi : 0;
     const bareme = base * (best + R.social);
     if (bareme < tax)
-      tips.push({ title: "Option pour le barème progressif", detail: `Si ta tranche marginale est ${tmi !== undefined ? Math.round(tmi * 100) + " %" : "0 % ou 11 %"}, l'option barème remplace les 12,8 % d'impôt par ta TMI (prélèvements sociaux de 18,6 % inchangés).`, saving: r2(tax - bareme) });
+      tips.push({ title: "Opt for the progressive income-tax scale", detail: `If your marginal bracket is ${tmi !== undefined ? Math.round(tmi * 100) + "%" : "0% or 11%"}, the scale option replaces the 12.8% income tax with your bracket (18.6% social charges unchanged).`, saving: r2(tax - bareme) });
   }
   // Portefeuille global en moins-value latente ?
   const now = holdingsAfter(evs);
@@ -203,7 +203,7 @@ function computeFR(input: TaxInput): TaxReport {
   for (const [a, q] of Object.entries(now)) vNow += q * (input.currentPrices[a] ?? 0);
   if (vNow > 0 && pta > vNow && net > 0) {
     const saving = Math.min(pta - vNow, net) * R.flatTax;
-    if (saving > 0) tips.push({ title: "Réaliser une moins-value avant le 31/12", detail: `Ton portefeuille vaut ${r2(vNow)} € pour un prix d'acquisition restant de ${r2(pta)} €. Une cession avant la fin de l'année crée une moins-value imputable sur tes gains de ${input.year}.`, saving: r2(saving) });
+    if (saving > 0) tips.push({ title: "Realise a loss before 31 December", detail: `Your portfolio is worth €${r2(vNow)} against a remaining acquisition cost of €${r2(pta)}. A disposal before year-end creates a loss that offsets your ${input.year} gains.`, saving: r2(saving) });
   }
   void tmiCases;
   return {
@@ -211,14 +211,14 @@ function computeFR(input: TaxInput): TaxReport {
     taxYear: String(input.year), currency: "EUR", taxableEvents: taxable, lines,
     totals: { proceeds: r2(proceedsYear), netGain: r2(net), exempt: exemptAll ? r2(Math.max(0, net)) : 0, taxableBase: r2(base), taxDue: r2(tax), effectiveRate: net > 0 ? r2(tax / net) : 0 },
     rulesApplied: [
-      "Flat tax 31,4 % (12,8 % IR + 18,6 % prélèvements sociaux, LFSS 2026)",
-      "Méthode globale du prix total d'acquisition (art. 150 VH bis CGI)",
-      "Échanges crypto → crypto non imposables (sursis)",
-      "Exonération si cessions annuelles ≤ 305 €",
-      "Moins-values imputables sur les plus-values de la même année",
+      "31.4% flat tax (12.8% income tax + 18.6% social charges, LFSS 2026)",
+      "Whole-portfolio acquisition-cost formula (CGI art. 150 VH bis)",
+      "Crypto → crypto swaps are not taxable (deferral)",
+      "Exempt if annual disposals ≤ €305",
+      "Losses offset gains of the same year",
     ],
     tips, holdings: holdingsList(input),
-    obligations: ["Formulaire 2086 (plus-values) et case 3AN/3BN de la 2042-C", "Formulaire 3916-bis pour chaque compte sur une plateforme étrangère"],
+    obligations: ["Form 2086 (gains) and boxes 3AN/3BN of form 2042-C", "Form 3916-bis for every account on a foreign exchange"],
     disclaimer: DISCLAIMER, source: input.source,
   };
 }
@@ -279,7 +279,7 @@ function computeDE(input: TaxInput): TaxReport {
     for (const lot of q) {
       const freeOn = addDays(lot.date, R.holdingDaysTaxFree + 1);
       const unreal = lot.qty * ((input.currentPrices[a] ?? 0) - lot.unit);
-      if (freeOn > today && unreal > 0)
+      if (freeOn > today && unreal * rate >= 1)
         tips.push({ title: `Don't sell ${a} before ${freeOn}`, detail: `${r2(lot.qty)} ${a} bought on ${lot.date} carry €${r2(unreal)} of unrealised gain. Hold until ${freeOn} and it becomes tax-free.`, saving: r2(unreal * rate) });
     }
   return {

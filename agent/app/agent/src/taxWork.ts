@@ -10,6 +10,7 @@ import { compareResidencies, computeTax, DEMO, normalizeCountry, SUPPORTED, type
 import { walletInput } from "./walletData.js";
 import { buildForms, type FormPack } from "./forms.js";
 import { strategies, type Strategy } from "./strategies.js";
+import { headline, sellToday, taxFreeDates, type Headline, type SellSim, type TaxFreeDate } from "./insights.js";
 
 export interface TaxRequest { country: string; countries: string[]; year: number; wallets: string[]; demo: boolean; lang: "fr" | "en"; platforms?: string[]; whatIf?: { costPerUnitEur: number; acquiredOn: string; label?: string } }
 
@@ -54,7 +55,10 @@ export function parseRequest(prompt: string): TaxRequest {
   return { country, countries, year, wallets, demo, lang, whatIf, platforms };
 }
 
-export async function buildReport(req: TaxRequest): Promise<{ report: TaxReport; comparison: ResidencyComparison | null; warnings: string[]; forms: FormPack; strategies: Strategy[] }> {
+export interface CountryPack { report: TaxReport; forms: FormPack; strategies: Strategy[] }
+export interface FullReport { report: TaxReport; comparison: ResidencyComparison | null; warnings: string[]; forms: FormPack; strategies: Strategy[]; byCountry: Record<string, CountryPack>; sellToday: SellSim[]; taxFreeDates: TaxFreeDate[]; headline: Headline }
+
+export async function buildReport(req: TaxRequest): Promise<FullReport> {
   const warnings: string[] = [];
   let input: TaxInput | null = null;
   if (!req.demo) {
@@ -71,9 +75,19 @@ export async function buildReport(req: TaxRequest): Promise<{ report: TaxReport;
     }
   }
   input ??= { ...DEMO, country: req.country, year: req.year || DEMO.year };
-  const report = computeTax({ ...input, country: req.country });
-  const comparison = req.countries.length > 1 ? compareResidencies(input, req.countries) : null;
-  return { report, comparison, warnings, forms: buildForms(report, req.platforms ?? []), strategies: strategies(report, input) };
+  const countries = [...new Set([req.country, ...req.countries].map(normalizeCountry))];
+  const byCountry: Record<string, CountryPack> = {};
+  for (const c of countries) {
+    const r = computeTax({ ...input, country: c });
+    byCountry[c] = { report: r, forms: buildForms(r, req.platforms ?? []), strategies: strategies(r, input) };
+  }
+  const main = byCountry[normalizeCountry(req.country)];
+  const comparison = countries.length > 1 ? compareResidencies(input, countries) : null;
+  return {
+    report: main.report, comparison, warnings, forms: main.forms, strategies: main.strategies, byCountry,
+    sellToday: sellToday(input, countries), taxFreeDates: taxFreeDates(input, countries),
+    headline: headline(main.report, main.strategies, comparison?.ranking),
+  };
 }
 
 export function renderComparison(c: ResidencyComparison): string {
