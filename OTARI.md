@@ -21,10 +21,10 @@ Steps 3 and 4 run in parallel, and the result streams to the browser step by ste
 | Rubric item | What TaxPilot does | Code |
 |---|---|---|
 | **Open-weight models (≥2, different purposes)** | Llama Guard 4 12B (safety classifier), DeepSeek V4 Flash (law research), gpt-oss-120b (math audit, tool use), Gemma 3 27B/12B (writing). Fallbacks: Qwen3 235B, Qwen3 Coder 30B, Mistral Small 4, Ministral 8B. All are open-weight models served through Otari. | `web/api-src/copilotCore.ts` (`MODELS`) |
-| **Model routing and fallbacks** | Three Otari routing policies: `taxpilot-research`, `taxpilot-auditor`, `taxpilot-writer`. They fail over across models and across providers (gpt-oss-120b on DeepInfra, then Together, then Fireworks). The writer policy uses a `budget_used_pct ≥ 70` condition to tier down to Gemma 3 12B. The app reads `Otari-Model`, `Otari-Provider`, `Otari-Fallback` and `Otari-Attempt-Count` and shows them. | `copilotCore.ts`, `otari.ts` (`chat`) |
+| **Model routing and fallbacks** | Four Otari routing policies: `taxpilot-research`, `taxpilot-auditor`, `taxpilot-writer`, plus `taxpilot-outage-drill` (UI toggle "Outage drill"). In the drill, the first target (Llama Guard 4) refuses structured output with a 400, and Otari fails over to Gemma 3 27B live (`Otari-Fallback: true`, attempt 2). They fail over across models and across providers (gpt-oss-120b on DeepInfra, then Together, then Fireworks). The writer policy uses a `budget_used_pct ≥ 70` condition to tier down to Gemma 3 12B. The app reads `Otari-Model`, `Otari-Provider`, `Otari-Fallback` and `Otari-Attempt-Count` and shows them. | `copilotCore.ts`, `otari.ts` (`chat`) |
 | **MCP integrations** | We wrote an **MCP server** that exposes the deterministic engine (`get_tax_report`, `get_disposal_ledger`, `get_tax_rules`, `compare_residencies`). It is stored in the Otari workspace, and the auditor calls it through `mcp_server_ids`, so Otari runs the MCP tool loop. | `web/api-src/mcpServer.ts`, `web/api-src/mcp.ts` |
 | **Web search / web fetch** | The research step checks every rule the engine applies (rates, allowances, holding periods) against today's sources with `otari_web_search` + `otari_web_fetch`, and returns confirmed / different / unclear with source URLs. | `copilotCore.ts` → `research()` |
-| **Code execution** | The auditor model re-derives the totals in Otari's sandbox (`otari_code_execution`). In addition, a **model-free** `POST /code/execute` replays the ledger, so the numbers are checked even if the model misbehaves. | `copilotCore.ts` → `audit()`, `otari.ts` (`execute`) |
+| **Code execution** | The auditor model re-derives the totals in Otari's sandbox (`otari_code_execution`), with one corrective retry if it skipped the sandbox. In addition, a **model-free** `POST /code/execute` replays the ledger, so the numbers are checked even if the model misbehaves. | `copilotCore.ts` → `audit()`, `otari.ts` (`execute`) |
 | **Budgets and spending limits** | A workspace spend ceiling (monthly) and `max_tokens` per role. The search step is capped with `max_uses`. A budget preflight switches to **saver mode** (research and model audit skipped) at ≥ 85 % of the user's budget. Any Otari `403 budget_exceeded` falls back to the deterministic summary, so the free report never breaks. | `copilotCore.ts` |
 | **Multiple models serving distinct roles** | guardian → researcher → auditor → advisor, each a different open-weight family picked for its job. | `copilotCore.ts` |
 | **Guardrails** | We wrote a **guardrails service** that speaks Otari's `/validate` contract, with three crypto-tax profiles: `crypto-secrets` (BIP-39 seed phrases, private keys and xprv keys never reach a provider), `prompt-injection`, and `tax-evasion` (we only help with *legal* optimisation). Otari runs these profiles in **block** mode before any provider is called (403 `guardrail_violation`). The advisor call carries a `monitor` check whose verdict comes back in the `Otari-Guardrails` header. | `web/api-src/guardService.ts`, `web/api-src/guard.ts` |
@@ -34,10 +34,15 @@ Steps 3 and 4 run in parallel, and the result streams to the browser step by ste
 
 - Service key `taxpilot-service`: `is_service_key`, end-user budgets `taxpilot-end-user-daily` (default) and `taxpilot-end-user-pro`.
 - Workspace spend ceiling: `taxpilot-workspace-monthly` ($1.50/month).
-- Routing policies: `taxpilot-research`, `taxpilot-auditor`, `taxpilot-writer` (see the diagram above).
+- Routing policies: `taxpilot-research`, `taxpilot-auditor`, `taxpilot-writer`, `taxpilot-outage-drill`.
 - Workspace tools: web search on (max 3 results, purpose hint "official government sources"), code execution on (30 s, 4 iterations).
 - Stored MCP server `taxpilot` → `/api/mcp` (bearer token).
 - Request-level guardrails → `/api/guard` (bearer credential).
+
+## Issues we opened on Otari
+
+- [#3150](https://github.com/mozilla-ai/otari/issues/3150): routing policies reject catalog model ids that chat completions accept.
+- [#3151](https://github.com/mozilla-ai/otari/issues/3151): let a request require a gateway tool (`tool_choice` for `otari_code_execution`).
 
 ## Run it
 
