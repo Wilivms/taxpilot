@@ -9,7 +9,7 @@ Give it a country and BSC wallets: it reads the real onchain history, applies th
 
 The tax math stays in deterministic code. The copilot runs five open-weight models through [Otari](https://otari.ai), each with one job: Llama Guard 4 guards the question, DeepSeek V4 Flash checks today's law with web search/fetch, gpt-oss-120b re-runs the numbers in Otari's sandbox through our MCP server, and Gemma 3 explains the result. Routing policies with fallbacks, our own guardrails service, per-user budgets on a service key and a workspace spend ceiling sit around all of it.
 
-➡ **[OTARI.md](OTARI.md)** maps every rubric item to the code.
+➡ **[OTARI.md](OTARI.md)** maps every rubric item to the code. · 🎬 **[Demo video](https://youtu.be/YIhIy0aQz7g)** · 🌐 **[Live app](https://taxpilot-blitz-bet.vercel.app/#copilot)**
 
 ![Copilot run: every Otari feature proven live](docs/copilot.png)
 
