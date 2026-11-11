@@ -53,6 +53,7 @@ export interface ChatOpts {
   maxTokens?: number;
   tools?: Record<string, unknown>[];
   mcpServers?: Record<string, unknown>[];
+  mcpServerIds?: string[]; // MCP servers stored in the Otari workspace
   guardrails?: Record<string, unknown>[];
   responseFormat?: Record<string, unknown>;
   temperature?: number;
@@ -80,9 +81,10 @@ export async function chat(o: ChatOpts): Promise<ChatResult> {
   if (o.user) body.user = o.user;
   if (o.tools?.length) body.tools = o.tools;
   if (o.mcpServers?.length) body.mcp_servers = o.mcpServers;
+  if (o.mcpServerIds?.length) body.mcp_server_ids = o.mcpServerIds;
   if (o.guardrails?.length) body.guardrails = o.guardrails;
   if (o.responseFormat) body.response_format = o.responseFormat;
-  if (o.tools?.length || o.mcpServers?.length) body.max_tool_iterations = 6;
+  if (o.tools?.length || o.mcpServers?.length || o.mcpServerIds?.length) body.max_tool_iterations = 6;
 
   const headers: Record<string, string> = { Authorization: `Bearer ${KEY()}`, "Content-Type": "application/json", ...(o.extraHeaders ?? {}) };
   if (o.endUserBudget) headers["Otari-End-User-Budget"] = o.endUserBudget;
