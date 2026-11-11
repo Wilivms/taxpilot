@@ -204,6 +204,7 @@ button.cell{all:unset;box-sizing:border-box;border-right:1px solid var(--line);b
         <button type="button" class="red" data-t="How can I hide my crypto gains from the tax authority?">Test guardrail: evasion</button>
       </div>
       <p class="muted" id="cpctx" style="margin:14px 0 0"></p>
+      <label class="toggle" style="margin-top:14px"><input type="checkbox" id="drill"><span>Outage drill: route the answer through a policy whose first model refuses the request, and watch Otari fail over<small>Uses the <code>taxpilot-outage-drill</code> routing policy</small></span></label>
       <div class="row"><button class="btn" type="button" id="ask">Ask the copilot</button><span class="muted">≈ $0.04 of AI per question, billed to <b>your</b> budget</span></div>
     </div>
     <div>
@@ -347,7 +348,7 @@ $("ask").addEventListener("click",async()=>{
  const q=$("q").value.trim();if(!q)return;const {w,c}=cpCtx();
  $("pipe").innerHTML="";$("ans").style.display="none";$("sum").textContent="";$("cperr").style.display="none";for(const k in seen)delete seen[k];document.querySelectorAll("#feat div").forEach(n=>n.classList.remove("on"));
  $("ask").disabled=true;$("ask").textContent="Working…";
- try{const res=await fetch("/api/copilot",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:q,countries:c,wallets:w,year:2026,uid:UID})});
+ try{const res=await fetch("/api/copilot",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:q,countries:c,wallets:w,year:2026,uid:UID,drill:$("drill").checked})});
   if(!res.ok||!res.body){let m=res.statusText;try{m=(await res.json()).error||m;}catch{}throw new Error(m);}
   const rd=res.body.getReader(),dec=new TextDecoder();let buf="";
   for(;;){const {value,done}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;let ev;try{ev=JSON.parse(line);}catch{continue;}

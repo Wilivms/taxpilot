@@ -24,7 +24,7 @@ export default async function handler(req: any, res: any) {
   res.setHeader("X-Accel-Buffering", "no");
   const emit = (ev: Record<string, unknown>) => { try { res.write(JSON.stringify(ev) + "\n"); } catch { /* client gone */ } };
   try {
-    await runCopilot({ question, countries, year: Number(b.year) || 2026, wallets, uid, lang: b.lang === "fr" || b.lang === "en" ? b.lang : undefined }, { selfUrl: selfUrl(req), guardToken: process.env.GUARD_TOKEN, mcpToken: process.env.MCP_TOKEN }, emit);
+    await runCopilot({ question, countries, year: Number(b.year) || 2026, wallets, uid, lang: b.lang === "fr" || b.lang === "en" ? b.lang : undefined, drill: b.drill === true }, { selfUrl: selfUrl(req), guardToken: process.env.GUARD_TOKEN, mcpToken: process.env.MCP_TOKEN }, emit);
   } catch (e) {
     emit({ type: "error", error: (e as Error).message });
   }

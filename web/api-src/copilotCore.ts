@@ -26,6 +26,8 @@ export const MODELS = {
   research: process.env.TP_POLICY_RESEARCH || "taxpilot-research",
   auditor: process.env.TP_POLICY_AUDITOR || "taxpilot-auditor",
   writer: process.env.TP_POLICY_WRITER || "taxpilot-writer",
+  /** Outage drill: first target (Llama Guard) rejects structured output with a 400, so Otari must fail over. */
+  drill: process.env.TP_POLICY_DRILL || "taxpilot-outage-drill",
 };
 /** Direct fallbacks used only if a routing policy name is unknown to the gateway (404/400). */
 const DIRECT: Record<string, string> = {
@@ -34,7 +36,7 @@ const DIRECT: Record<string, string> = {
   "taxpilot-writer": "google/gemma-3-27b-it",
 };
 
-export interface CopilotInput { question: string; countries: string[]; year: number; wallets: string[]; uid: string; lang?: "fr" | "en" }
+export interface CopilotInput { question: string; countries: string[]; year: number; wallets: string[]; uid: string; lang?: "fr" | "en"; drill?: boolean }
 export interface Step { id: string; title: string; role: string; status: "running" | "done" | "skipped" | "blocked" | "failed"; detail?: string; evidence?: CallEvidence[]; data?: unknown }
 export type Emit = (ev: Record<string, unknown>) => void;
 
@@ -192,13 +194,19 @@ export async function runCopilot(inp: CopilotInput, ctx: { selfUrl: string; guar
     "End with one short line saying this is an estimate, not tax advice.",
   ].join(" ");
   try {
-    const res = await chat({ role: "advisor", model: MODELS.writer, user, maxTokens: 420, temperature: 0.3, messages: [{ role: "system", content: system }, { role: "user", content: `FACTS:\n${JSON.stringify(facts)}\n\nQUESTION: ${inp.question}` }], guardrails: [{ profile: "prompt-injection", mode: "monitor", url: guardUrl, ...(ctx.guardToken ? { credential: ctx.guardToken } : {}) }] }).catch(async (e) => {
+    const drillFormat = { type: "json_schema", json_schema: { name: "advice", schema: { type: "object", properties: { answer: { type: "string" } }, required: ["answer"], additionalProperties: false } } };
+    const res = await chat({ role: "advisor", model: inp.drill ? MODELS.drill : MODELS.writer, ...(inp.drill ? { responseFormat: drillFormat } : {}), user, maxTokens: 420, temperature: 0.3, messages: [{ role: "system", content: system }, { role: "user", content: `FACTS:\n${JSON.stringify(facts)}\n\nQUESTION: ${inp.question}` }], guardrails: [{ profile: "prompt-injection", mode: "monitor", url: guardUrl, ...(ctx.guardToken ? { credential: ctx.guardToken } : {}) }] }).catch(async (e) => {
       const er = e as OtariError;
       if ((er.status === 404 || er.status === 400) && DIRECT[MODELS.writer]) return chat({ role: "advisor", model: DIRECT[MODELS.writer], user, maxTokens: 420, messages: [{ role: "system", content: system }, { role: "user", content: `FACTS:\n${JSON.stringify(facts)}\n\nQUESTION: ${inp.question}` }] });
       throw e;
     });
-    push({ id: "advisor", title: "Answer in plain language", role: "taxpilot-writer", status: "done", detail: res.evidence.model.includes("12b") ? "Budget above 70%: Otari's routing policy tiered the advisor down to Gemma 3 12B." : "Grounded in the engine, the law check and the audit.", evidence: [res.evidence], data: { answer: res.text } });
-    emit({ type: "answer", text: res.text });
+    const text = inp.drill ? String(parseJson<any>(res.text)?.answer ?? res.text) : res.text;
+    const ev = res.evidence;
+    const detail = inp.drill
+      ? (ev.fallback || ev.attempts > 1 ? `Outage drill: the policy's first target (Llama Guard 4) refused the request, and Otari failed over to ${ev.model} on attempt ${ev.attempts}. The user never saw the outage.` : "Outage drill: the first target answered, so no failover was needed this time.")
+      : ev.model.includes("12b") ? "Budget above 70%: Otari's routing policy tiered the advisor down to Gemma 3 12B." : "Grounded in the engine, the law check and the audit.";
+    push({ id: "advisor", title: "Answer in plain language", role: inp.drill ? "taxpilot-outage-drill" : "taxpilot-writer", status: "done", detail, evidence: [ev], data: { answer: text } });
+    emit({ type: "answer", text });
   } catch (e) {
     const er = e as OtariError;
     const fallback = deterministicSummary(r, full.comparison);
