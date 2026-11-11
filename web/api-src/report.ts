@@ -13,13 +13,14 @@ export default async function handler(req: any, res: any) {
     const b = typeof req.body === "string" ? JSON.parse(req.body) : req.body ?? {};
     const wallets = (Array.isArray(b.wallets) ? b.wallets : []).map(String).filter((w: string) => /^0x[a-fA-F0-9]{40}$/.test(w)).slice(0, 3);
     const countries = (Array.isArray(b.countries) ? b.countries : []).map(String).filter((c: string) => c in COUNTRY_NAMES).slice(0, 8);
-    if (!wallets.length) { res.status(400).json({ error: "Add at least one valid BSC wallet (0x…)." }); return; }
+    const demo = b.demo === true && !wallets.length;
+    if (!wallets.length && !demo) { res.status(400).json({ error: "Add at least one valid BSC wallet (0x…)." }); return; }
     if (!countries.length) { res.status(400).json({ error: "Pick at least one country." }); return; }
     const year = Number(b.year) || 2026;
     const platforms = (Array.isArray(b.platforms) ? b.platforms : []).map(String).slice(0, 10);
     const ob = b.olderBasis && Number(b.olderBasis.costPerUnitEur) >= 0 && /^\d{4}-\d{2}-\d{2}$/.test(String(b.olderBasis.acquiredOn ?? "")) ? { costPerUnitEur: Number(b.olderBasis.costPerUnitEur), acquiredOn: String(b.olderBasis.acquiredOn), label: "cost basis declared by the user" } : undefined;
     const req2 = parseRequest(JSON.stringify({ countries, year, wallets, platforms, ...(ob ? { whatIf: ob } : {}) }));
-    req2.demo = false;
+    req2.demo = demo;
     const out = await buildReport(req2);
     if (out.warnings.some((w) => w.startsWith("Live wallet analysis failed"))) { res.status(502).json({ error: out.warnings.join(" ") }); return; }
     if (out.comparison) (out.comparison as { reports?: unknown }).reports = undefined;

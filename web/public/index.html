@@ -178,7 +178,7 @@ button.cell{all:unset;box-sizing:border-box;border-right:1px solid var(--line);b
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px"><input class="inp" id="obp" inputmode="decimal" placeholder="Avg. price paid, € per coin"><input class="inp" id="obd" type="date" value="2021-01-01"></div>
         <p class="muted" style="margin:8px 0 0">Used only for coins that left your wallet with no purchase visible in the last 365 days. Outgoing transfers count as disposals.</p></details>
       <label class="toggle"><input type="checkbox" id="nomad"><span>I'm a nomad / I hold several passports<small>Compare every country you could be tax resident in.</small></span></label>
-      <div class="row"><button class="btn" type="submit" id="go">Fill my tax forms</button><span class="muted">Tax year 2026</span></div>
+      <div class="row"><button class="btn" type="submit" id="go">Fill my tax forms</button><button class="btn ghost" type="button" id="demo">No wallet? Try the demo portfolio</button><span class="muted">Tax year 2026</span></div>
     </div>
     <div><label class="l">2 · Tax residence</label><div class="chips" id="chips"></div></div>
   </form>
@@ -305,11 +305,12 @@ function syncHash(wallets,countries,obp,obd){const q=new URLSearchParams({w:wall
 $("f").addEventListener("submit",async e=>{
   e.preventDefault();$("err").style.display="none";$("out").style.display="none";
   const wallets=[...new Set($("ws").value.match(/0x[a-fA-F0-9]{40}/g)||[])].slice(0,3);
-  if(!wallets.length){$("err").textContent="Paste at least one BSC wallet address (0x…).";$("err").style.display="block";return;}
+  const demo=e.submitter&&e.submitter.id==="demo"||window.__tpDemo===true;window.__tpDemo=false;
+  if(!wallets.length&&!demo){$("err").textContent="Paste at least one BSC wallet address (0x…), or try the demo portfolio.";$("err").style.display="block";return;}
   const countries=sel(),platforms=$("pf").value.split(",").map(s=>s.trim()).filter(Boolean);const obp=parseFloat(($("obp").value||"").replace(",","."));const olderBasis=isFinite(obp)&&obp>=0&&$("obd").value?{costPerUnitEur:obp,acquiredOn:$("obd").value}:undefined;
   syncHash(wallets,countries,olderBasis?olderBasis.costPerUnitEur:undefined,olderBasis?olderBasis.acquiredOn:"");$("load").style.display="block";$("go").disabled=true;
   const msgs=["Reading your wallets on BNB Chain…","Pricing every transfer in euros…","Applying each country's 2026 rules…","Filling the official forms…","Simulating sales and tax-free dates…","Computing legal strategies…"];let k=0;const iv=setInterval(()=>{k=Math.min(k+1,msgs.length-1);$("lmsg").textContent=msgs[k];},4000);
-  try{const res=await fetch("/api/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({wallets,countries,year:2026,platforms,olderBasis})});const d=await res.json();if(!res.ok)throw new Error(d.error||res.statusText);render(d);}
+  try{const res=await fetch("/api/report",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({wallets:demo?[]:wallets,demo,countries,year:2026,platforms,olderBasis})});const d=await res.json();if(!res.ok)throw new Error(d.error||res.statusText);render(d);}
   catch(x){$("err").textContent="Could not build the report: "+x.message;$("err").style.display="block";}
   finally{clearInterval(iv);$("load").style.display="none";$("go").disabled=false;}
 });
@@ -358,6 +359,7 @@ $("ask").addEventListener("click",async()=>{
  finally{$("ask").disabled=false;$("ask").textContent="Ask the copilot";loadBudget();}
 });
 
+$("demo").addEventListener("click",()=>{window.__tpDemo=true;$("f").requestSubmit();});
 requestAnimationFrame(()=>document.querySelector(".hero").classList.add("in"));
 $("ws").addEventListener("input",()=>{const n=($("ws").value.match(/0x[a-fA-F0-9]{40}/g)||[]).length;$("wc").textContent=n?`${Math.min(n,3)} valid wallet${n>1?"s":""}${n>3?" (first 3 used)":""}`:"";});
 (()=>{const q=new URLSearchParams(location.hash.slice(1));if(!q.get("w"))return;$("ws").value=q.get("w").split(",").join("\n");$("ws").dispatchEvent(new Event("input"));const cs=(q.get("c")||"").split(",").filter(c=>NAMES[c]);if(cs.length>1)$("nomad").checked=true;if(cs.length)chips.forEach(x=>x.setAttribute("aria-pressed",String(cs.includes(x.dataset.c))));if(q.get("bp")){$("obp").value=q.get("bp");$("obd").value=q.get("bd")||"2021-01-01";}$("f").requestSubmit();})();
