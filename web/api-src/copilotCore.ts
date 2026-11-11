@@ -103,7 +103,7 @@ export async function runCopilot(inp: CopilotInput, ctx: { selfUrl: string; guar
     if (!sheet.claims.length) { push({ id: "law", title: "Live law check", role: "taxpilot-research", status: "skipped", detail: "No verified rule set for this country." }); return null; }
     const key = `${country}:${inp.year}`;
     const hit = lawCache.get(key);
-    if (hit && Date.now() - hit.at < LAW_TTL) { push({ id: "law", title: "Live law check", role: "taxpilot-research", status: "done", detail: "Reused today's law check (cached, $0).", evidence: hit.evidence, data: hit.data }); return hit.data; }
+    if (hit && Date.now() - hit.at < LAW_TTL) { push({ id: "law", title: "Live law check", role: "taxpilot-research", status: "done", detail: "Reused today's law check from cache: $0, no new search.", evidence: hit.evidence.map((e) => ({ ...e, costUsd: 0, ms: 0, role: "law-researcher (cached)" })), data: hit.data }); return hit.data; }
     push({ id: "law", title: "Live law check", role: "taxpilot-research", status: "running" });
     const prompt = [
       `You verify a crypto tax engine against CURRENT law. Country: ${sheet.name}. Tax year: ${inp.year}.`,
